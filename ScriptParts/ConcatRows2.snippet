@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Add column to table</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>ConcatRows2</Title>  
+                        <Shortcut>ConcatNoLoopXML</Shortcut>  
+<Description>Generate a string from a column in a table rows with a separator between records using STUFF.</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>
+  <Declarations>
+    <Literal>
+      <ID>Tablename</ID>
+      <ToolTip>Name of the rows table</ToolTip>
+      <Default>TableX</Default>
+    </Literal>
+	  <Literal>
+		  <ID>ColumnX</ID>
+		  <ToolTip>Name of the column to concatenate</ToolTip>
+		  <Default>ColumnX</Default>
+	  </Literal>
+  </Declarations>
+<Code Language="SQL">
+  <![CDATA[Declare @ConCatStr nVarchar(MAX)
+
+SELECT @ConCatStr = Stuff((SELECT part AS [text()] 
+ FROM ( 
+ SELECT part = Convert(nvarchar(50), $ColumnX$) + char(10)
+ from (select top 5 * from $TableX$) o 
+ ) x For XML PATH ('')),1,1,'')
+ 
+ SELECT @ConCatStr
+Go
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

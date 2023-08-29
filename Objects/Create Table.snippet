@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Title</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Create Table</Title>  
+                        <Shortcut>CreateTable</Shortcut>  
+<Description>Creates a new table</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>
+  <Declarations>
+    <Literal>
+      <ID>Tablename</ID>
+      <ToolTip>Name of the table</ToolTip>
+      <Default>Sample_Table</Default>
+    </Literal>
+    <Literal>
+      <ID>column1</ID>
+      <ToolTip>Name of the column</ToolTip>
+      <Default>column_1</Default>
+    </Literal>
+    <Literal>
+      <ID>datatype1</ID>
+      <ToolTip>Data type of the column</ToolTip>
+      <Default>int</Default>
+    </Literal>
+    <Literal>
+      <ID>column2</ID>
+      <ToolTip>Name of the column</ToolTip>
+      <Default>column_2</Default>
+    </Literal>
+    <Literal>
+      <ID>datatype2</ID>
+      <ToolTip>Data type of the column</ToolTip>
+      <Default>int</Default>
+    </Literal>
+  </Declarations>
+<Code Language="SQL">
+  <![CDATA[if not exists (Select 1 from sys.objects where name='$Tablename$' and type='U')
+    CREATE TABLE [dbo].[$Tablename$](
+      [PkCol01]         [nvarchar](50)  NOT NULL
+      , [PkCol02]       [nvarchar](50)  NOT NULL
+      , [RegDate]       [datetime]      NOT NULL default convert(nvarchar(10),getdate(),121)
+      , [RowCreatedDt]  [datetime]      NOT NULL default convert(nvarchar(10),getdate(),121)
+      , [RowCreatedBy]  [nvarchar](255) NULL default(SUSER_NAME())
+      , [RowUpdatedDt]  [datetime]      NULL
+      , [RowUpdatedBy]  [nvarchar](255) NULL
+      , [$column1$]     [$datatype1$]   NULL
+      , [$column2$]     [$datatype2$]   NULL
+    , CONSTRAINT [PK_$Tablename$] PRIMARY KEY CLUSTERED 
+    (
+      [PkCol01] ASC,
+      [PkCol02] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+    ) ON [PRIMARY]
+	GO
+	
+----Add Column Sample	
+--if not exists (select 1 from sys.columns where name='Column' and object_id=object_id('$Tablename$'))
+--  alter table $Tablename$ add Column nvarchar(50) null
+--Go
+
+----Add Default sample
+--If exists(Select 1 from INFORMATION_SCHEMA.COLUMNS Where COLUMN_NAME = 'Column' And TABLE_NAME = '$Tablename$' And COLUMN_DEFAULT is null)
+--	ALTER TABLE $Tablename$ ADD  DEFAULT ((DEFAULT)) FOR Column
+--GO
+
+----Create new primary key
+--if exists (select 1 from sys.indexes where object_id=object_id('$Tablename$') and name = 'pk_$Tablename$' and is_primary_key=1)
+--	ALTER TABLE $Tablename$ DROP CONSTRAINT pk_$Tablename$
+--go
+
+--ALTER TABLE $Tablename$
+--ADD CONSTRAINT pk_$Tablename$ PRIMARY KEY
+--(
+--PkCol01 ASC,
+--		PkCol02 ASC,
+--		PkCol03 ASC,
+--		Column AS
+--		)
+
+----Drop index
+--If Exists(Select 1 From sys.indexes
+--Where name = 'IX_$Tablename$_01')
+--	Drop index $Tablename$.IX_$Tablename$_01
+--Go
+--
+
+---Create index
+--If Not Exists(Select 1 From sys.indexes
+--Where name = 'IX_$Tablename$_01')
+--	Create index IX_$Tablename$_01 on $Tablename$(PkCol01, PkCol02, PkCol03 , Colum)
+--Go
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

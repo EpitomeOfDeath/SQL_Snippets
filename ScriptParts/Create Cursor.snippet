@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Title</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Create Cursor</Title>  
+                        <Shortcut>cur</Shortcut>  
+<Description>Generates a basic cursor script</Description>  
+<Author>nsn</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>  
+<Declarations>  
+  <Literal>  
+  <ID>cursorcode</ID>  
+  <ToolTip>Creates a cursor</ToolTip>  
+  <Default>cursorcode</Default>  
+  </Literal>
+  <Literal>
+    <ID>TableName</ID>
+    <ToolTip>Name of table to use for cursor</ToolTip>
+    <Default>Generic</Default>
+  </Literal>
+  <Literal>
+    <ID>column</ID>
+    <ToolTip>Selected column</ToolTip>
+    <Default>column</Default>
+  </Literal>
+</Declarations>  
+<Code Language="SQL">
+  <![CDATA[declare
+@Foretagkod int
+, @$column$1 int
+, @$column$2 int
+	
+DECLARE CC_crs_$TableName$ CURSOR LOCAL STATIC FORWARD_ONLY FOR
+SELECT Foretagkod
+, $column$1
+, $column$2
+FROM $TableName$ x WITH(READUNCOMMITTED)
+WHERE 1 = 2
+OPEN CC_crs_$TableName$
+WHILE 1 = 1
+BEGIN
+	FETCH NEXT FROM CC_crs_$TableName$ INTO
+	@Foretagkod
+	, @$column$1
+	, @$column$2
+	if @@FETCH_STATUS<>0 break
+END
+CLOSE CC_crs_$TableName$ DEALLOCATE CC_crs_$TableName$
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Title</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Create Stored procedure</Title>  
+                        <Shortcut>CreateSp</Shortcut>  
+<Description>Creates a standard procedure</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>  
+<Declarations>  
+  <Literal>  
+    <ID>ProcedureName</ID>  
+    <ToolTip>Name of the procedure</ToolTip>  
+    <Default>SP_REPLACE</Default>  
+  </Literal>
+</Declarations>  
+<Code Language="SQL">
+  <![CDATA[SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/*
+EXEC $ProcedureName$
+@ProjectId = NULL
+, @ItemTypeId  = NULL
+------------------------------------------------------------------------------------------------------
+Description: 
+Created by:
+  
+Changes
+Who     When        What
+------------------------------------------------------------------------------------------------------
+*/
+CREATE OR ALTER PROC [dbo].[$ProcedureName$]
+@ProjectId BIGINT
+AS
+
+DECLARE
+@EnterTrancount     INT = @@TranCount
+, @NewLine            CHAR(2) = CHAR(10) + CHAR(13)
+
+BEGIN TRY
+  Printe 'Do stuff here'
+END TRY
+
+-------------------------------------------------------------------
+-- Handle error
+-------------------------------------------------------------------
+BEGIN CATCH
+END CATCH
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

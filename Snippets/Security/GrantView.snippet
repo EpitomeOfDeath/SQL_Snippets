@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Add column to table</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Grant View</Title>  
+                        <Shortcut>GRANTVW</Shortcut>  
+<Description>GRAN access to view</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>
+  <Declarations>
+    <Literal>
+      <ID>ViewName</ID>
+      <ToolTip>Name of the view</ToolTip>
+      <Default>ViewX</Default>
+    </Literal>
+		<Literal>
+			<ID>UserName</ID>
+			<ToolTip>Name of the user</ToolTip>
+			<Default>AIR5\VBAS_USER</Default>
+		</Literal>
+	</Declarations>
+<Code Language="SQL">
+  <![CDATA[grant Select on $ViewName$ to [$UserName$]
+Go
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

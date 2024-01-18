@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Title</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Author</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Add parameter to VBAS..Parameter</Title>  
+                        <Shortcut>CCVW</Shortcut>  
+<Description>Add parameter to VBAS..Parameter</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>  
+<Declarations>  
+  <Literal>  
+    <ID>ParamNyckel</ID>  
+    <ToolTip>ParamNyckel</ToolTip>  
+    <Default>''</Default>  
+  </Literal>
+  <Literal>
+    <ID>NumParam1</ID>
+    <ToolTip>NumParam1</ToolTip>
+    <Default>NULL</Default>
+  </Literal>
+	<Literal>
+		<ID>NumParam2</ID>
+		<ToolTip>NumParam2</ToolTip>
+		<Default>NULL</Default>
+	</Literal>
+	<Literal>
+		<ID>TextParam1</ID>
+		<ToolTip>TextParam1</ToolTip>
+		<Default>NULL</Default>
+	</Literal>
+	<Literal>
+		<ID>TextParam2</ID>
+		<ToolTip>TextParam2</ToolTip>
+		<Default>NULL</Default>
+	</Literal>
+	<Literal>
+		<ID>Notering</ID>
+		<ToolTip>Notering</ToolTip>
+		<Default>NULL</Default>
+	</Literal>
+	<Literal>
+    <ID>ÄndrAv</ID>
+    <ToolTip>ÄndrAv</ToolTip>
+    <Default>'FLEMIUT'</Default>
+  </Literal>
+	<Literal>
+		<ID>ÄndrDatum</ID>
+		<ToolTip>ÄndrDatum</ToolTip>
+		<Default>GetDate()</Default>
+	</Literal>
+</Declarations>  
+<Code Language="SQL">
+  <![CDATA[
+Insert into parameter
+(
+ParamNyckel
+, NumParam1
+, NumParam2
+, TextParam1
+, TextParam2
+, Notering
+, ÄndrAv
+, ÄndrDatum
+)
+Values
+(
+$ParamNyckel$--ParamNyckel
+, $NumParam1$--NumParam1
+, $NumParam2$--NumParam2
+, $TextParam1$--TextParam1
+, $TextParam2$--TextParam2
+, $Notering$--Notering
+, $ÄndrAv$--ÄndrAv
+, $ÄndrDatum$--ÄndrDatum
+)
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

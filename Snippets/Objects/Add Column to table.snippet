@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Add column to table</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Author</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Add column to table</Title>  
+                        <Shortcut>ADDCOLTOTBL</Shortcut>  
+<Description>Add a new column to a table if it does not exists</Description>  
+<Author>miut</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>
+  <Declarations>
+    <Literal>
+      <ID>Tablename</ID>
+      <ToolTip>Name of the table</ToolTip>
+      <Default>TableX</Default>
+    </Literal>
+	  <Literal>
+		  <ID>ColumnX</ID>
+		  <ToolTip>Name of the column to add</ToolTip>
+		  <Default>ColumnX</Default>
+	  </Literal>
+	  <Literal>
+		  <ID>DataType</ID>
+		  <ToolTip>The Datatype off the column to add.</ToolTip>
+		  <Default>nVarchar(50) NULL</Default>
+	  </Literal>
+	  <Literal>
+		  <ID>Default</ID>
+		  <ToolTip>The Default value if null.</ToolTip>
+		  <Default>DEFAULT(defaultvale)</Default>
+	  </Literal>
+  </Declarations>
+<Code Language="SQL">
+  <![CDATA[IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$Tablename$' AND COLUMN_NAME='$ColumnX$')
+	ALTER TABLE [dbo].[$Tablename$] ADD $ColumnX$ $DataType$ $Default$
+Go
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Expensive queries</Title>
+			<Shortcut>expq</Shortcut>
+			<Description>Get expensive queries</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+
+Declare
+@MillisecDivisor int = 1000 --dm_exec_query_stats times are in microseconds
+, @FromLastExecutionDate DATETIME2(0) = '2024-01-01 00:00:01' --Enter a date and tim from where to start looking
+, @ObjectName nVarchar(1024) = '%%'--Enter a specific object name to investigate
+
+DECLARE
+@Excluded Table(ObjectName sysname)
+
+--Enter objects to exclude
+INSERT INTO @Excluded(ObjectName)
+VALUES('xyz')
+
+SELECT
+st.objectid	
+, OBJECT_NAME(st.objectid) ObjectName
+, o.[type] As ObjectType
+, creation_time
+, last_execution_time
+, total_physical_reads
+, total_logical_reads
+, total_logical_writes
+, execution_count
+, total_worker_time / @MillisecDivisor As total_worker_time
+, total_elapsed_time / @MillisecDivisor As total_elapsed_time
+, (total_elapsed_time / @MillisecDivisor) / execution_count avg_elapsed_time
+,SUBSTRING(st.text, (qs.statement_start_offset/2) + 1,
+((CASE statement_end_offset
+WHEN -1 THEN DATALENGTH(st.text)
+ELSE qs.statement_end_offset END
+- qs.statement_start_offset)/2) + 1) AS statement_text
+FROM sys.dm_exec_query_stats AS qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+LEFT JOIN sys.objects o on o.object_id = st.objectid
+WHERE last_execution_time >= @FromLastExecutionDate
+AND OBJECT_NAME(st.objectid) NOT IN(Select ObjectName From @Excluded)
+ORDER BY (total_elapsed_time / @MillisecDivisor) / execution_count DESC;
+
+
+SELECT *
+FROM
+(
+	SELECT
+	st.objectid	
+	, OBJECT_NAME(st.objectid) o_Name
+	, OBJECTPROPERTY(st.objectid, 'IsProcedure') As IsProcedure
+	, st.number
+	, SUM(total_physical_reads) Sum_total_physical_reads
+	, SUM(total_logical_reads) Sum_total_logical_reads
+	, SUM(total_logical_writes) Sum_total_logical_writes
+	, SUM(execution_count) Sum_execution_count
+	, SUM(total_worker_time / @MillisecDivisor)Sum_total_worker_time
+	, SUM(total_elapsed_time / @MillisecDivisor) Sum_total_elapsed_time
+	, SUM((total_elapsed_time / @MillisecDivisor) / execution_count) Sum_avg_elapsed_time
+	FROM sys.dm_exec_query_stats AS qs
+	CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+	WHERE last_execution_time >= @FromLastExecutionDate
+	AND OBJECT_NAME(st.objectid) NOT IN(Select ObjectName From @Excluded)
+	AND OBJECT_NAME(st.objectid) LIKE @ObjectName
+	GROUP BY
+	st.objectid	
+	, OBJECT_NAME(st.objectid)
+	, OBJECTPROPERTY(st.objectid, 'IsProcedure')
+	, st.number
+) Sums
+ORDER BY Sum_avg_elapsed_time DESC;]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

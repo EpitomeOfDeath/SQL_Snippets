@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Current ANSI Settings in Db</Title>
+			<Shortcut>CURRANSI</Shortcut>
+			<Description>Get the currens ANSI Settings for the database.</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+DECLARE @options INT SELECT @options = @@OPTIONS 
+PRINT @options
+IF ( (1 & @options) = 1 ) PRINT 'DISABLE_DEF_CNST_CHK'
+IF ( (2 & @options) = 2 ) PRINT 'IMPLICIT_TRANSACTIONS' 
+IF ( (4 & @options) = 4 ) PRINT 'CURSOR_CLOSE_ON_COMMIT' 
+IF ( (8 & @options) = 8 ) PRINT 'ANSI_WARNINGS' 
+IF ( (16 & @options) = 16 ) PRINT 'ANSI_PADDING' 
+IF ( (32 & @options) = 32 ) PRINT 'ANSI_NULLS' 
+IF ( (64 & @options) = 64 ) PRINT 'ARITHABORT' 
+IF ( (128 & @options) = 128 ) PRINT 'ARITHIGNORE'
+IF ( (256 & @options) = 256 ) PRINT 'QUOTED_IDENTIFIER' 
+IF ( (512 & @options) = 512 ) PRINT 'NOCOUNT' 
+IF ( (1024 & @options) = 1024 ) PRINT 'ANSI_NULL_DFLT_ON' 
+IF ( (2048 & @options) = 2048 ) PRINT 'ANSI_NULL_DFLT_OFF' 
+IF ( (4096 & @options) = 4096 ) PRINT 'CONCAT_NULL_YIELDS_NULL' 
+IF ( (8192 & @options) = 8192 ) PRINT 'NUMERIC_ROUNDABORT' 
+IF ( (16384 & @options) = 16384 ) PRINT 'XACT_ABORT' 
+
+/*Settings for Trace
+ANSI_WARNINGS
+ANSI_PADDING
+ANSI_NULLS
+QUOTED_IDENTIFIER
+ANSI_NULL_DFLT_ON
+CONCAT_NULL_YIELDS_NULL
+*/
+
+/*To check in sp
+DECLARE @options INT SELECT @options = @@OPTIONS 
+DECLARE @_guid uniqueidentifier = NEWID()
+INSERT INTO mu_tmp(SETOPTION, _guid) Values(NULL, @_guid)
+
+IF ( (1 & @options) = 1 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('DISABLE_DEF_CNST_CHK', @_guid)
+IF ( (2 & @options) = 2 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('IMPLICIT_TRANSACTIONS', @_guid) 
+IF ( (4 & @options) = 4 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('CURSOR_CLOSE_ON_COMMIT', @_guid) 
+IF ( (8 & @options) = 8 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ANSI_WARNINGS', @_guid)
+IF ( (16 & @options) = 16 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ANSI_PADDING', @_guid)
+IF ( (32 & @options) = 32 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ANSI_NULLS', @_guid)
+IF ( (64 & @options) = 64 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ARITHABORT', @_guid)
+IF ( (128 & @options) = 128 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ARITHIGNORE', @_guid)
+IF ( (256 & @options) = 256 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('QUOTED_IDENTIFIER', @_guid)
+IF ( (512 & @options) = 512 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('NOCOUNT', @_guid)
+IF ( (1024 & @options) = 1024 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ANSI_NULL_DFLT_ON', @_guid)
+IF ( (2048 & @options) = 2048 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('ANSI_NULL_DFLT_OFF', @_guid)
+IF ( (4096 & @options) = 4096 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('CONCAT_NULL_YIELDS_NULL', @_guid)
+IF ( (8192 & @options) = 8192 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('NUMERIC_ROUNDABORT', @_guid)
+IF ( (16384 & @options) = 16384 ) INSERT INTO mu_tmp(SETOPTION, _guid) VALUES('XACT_ABORT', @_guid)
+*/ ]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

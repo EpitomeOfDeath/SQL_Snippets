@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Loop using primary key</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>PK While</Title>  
+                        <Shortcut>pkwhile</Shortcut>  
+<Description>While loop using primary key.</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>
+  <Declarations>
+    <Literal>
+      <ID>Tablename</ID>
+      <ToolTip>Name of the table to loop</ToolTip>
+      <Default>TableX</Default>
+    </Literal>
+  </Declarations>
+<Code Language="SQL">
+  <![CDATA[DECLARE
+@Id BIGINT
+
+SELECT
+	@Id = ISNULL(MIN(Id), -1)
+FROM
+	$TableName$
+WHERE
+	1 = 1 --Add condition
+
+WHILE @Id != -1
+BEGIN
+	/*
+		Do Stuff here
+	*/
+
+	SELECT
+		@Id = ISNULL(MIN(Id), -1)
+	FROM
+		$TableName$
+	WHERE
+		1 = 1 --Add condition
+		AND Id > @Id
+END
+Go
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

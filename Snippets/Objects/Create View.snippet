@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Title</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Create View</Title>  
+                        <Shortcut>CCVW</Shortcut>  
+<Description>Creates a view</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>  
+<Declarations>  
+  <Literal>  
+    <ID>ViewName</ID>  
+    <ToolTip>Name of the View</ToolTip>  
+    <Default>V_REPLACE</Default>  
+  </Literal>
+  <Literal>
+    <ID>TableName</ID>
+    <ToolTip>Name of the table</ToolTip>
+    <Default>REPLACE</Default>
+  </Literal>
+  <Literal>
+    <ID>ColumnName</ID>
+    <ToolTip>Name of column in the view</ToolTip>
+    <Default>ColumnName</Default>
+  </Literal>
+</Declarations>  
+<Code Language="SQL">
+  <![CDATA[IF NOT EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[dbo].[$ViewName$]'))
+  exec sp_executesql N'Create View [dbo].[$ViewName$] as select 1 as col01'
+GO
+
+Alter View [dbo].[$ViewName$]
+AS
+
+Select Distinct
+*
+from $TableName$ with(readuncommitted)
+where 1 = 2
+
+GO
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

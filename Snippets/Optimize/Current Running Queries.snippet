@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Current Running Queries</Title>
+			<Shortcut>currq</Shortcut>
+			<Description>List the current running queries</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+SELECT 
+    DB_NAME(p.dbid) as DBName 
+	, loginame
+	, spid
+	, kpid
+	, blocked
+	, waittype
+	, waittime
+	, lastwaittype
+	, waitresource
+	, uid
+	, cpu
+	, physical_io
+	, memusage
+	, last_batch
+	, open_tran
+	, status
+	, hostname
+	, program_name
+	, cmd
+	, sql_handle
+	, stmt_start
+	, stmt_end
+	, request_id
+	, page_resource
+	, s.text
+FROM
+    sys.sysprocesses p
+CROSS APPLY sys.dm_exec_sql_text(sql_handle) s
+WHERE 
+    p.dbid > 0
+
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

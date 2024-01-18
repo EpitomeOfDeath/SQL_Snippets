@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Index analyze</Title>
+			<Shortcut>ixan</Shortcut>
+			<Description>List index usage</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+/*
+All zero values mean that the table is not used, or the SQL Server service restarted recently.
+An index with zero or small number of seeks, scans or lookups and large number of updates is a useless index and should be removed, after verifying with the system owner, as the main purpose of adding the index is speeding up the read operations.
+An index that is scanned heavily with zero or small number of seeks means that the index is badly used and should be replaced with more optimal one.
+An index with large number of Lookups means that we need to optimize the index by adding the frequently looked up columns to the existing index non-key columns using the INCLUDE clause.
+A table with a very large number of Scans indicates that SELECT * queries are heavily used, retrieving more columns than what is required, or the index statistics should be updated.
+A Clustered index with large number of Scans means that a new Non-clustered index should be created to cover a non-covered query.
+Dates with NULL values mean that this action has not occurred yet.
+Large scans are OK in small tables.
+
+*/
+Declare
+@TableName sysname = NULL --Enter a specific tabel to investigate
+, @IndexName sysname = NULL --Enter a specific index to investigate
+, @IndexUsageDropThreshold Int = 100 --Enter a value (Sum of SEEK, SCAN, LOOCKUP) for when a DROP INDEX statement shuold be created
+
+;WITH CTE_IndexInfo
+AS
+(
+	SELECT
+		OBJECT_NAME(x.ObjectId) Table_Name
+		, x.ObjectId
+		, x.Index_Name
+		, x.index_id As IndexId
+		, x.Index_Type
+		, s.IndexSizeKB
+		, x.LastSeek
+		, x.LastScan
+		, x.LastLookup
+		, x.LastUpdate
+		, x.NumOfSeeks
+		, x.NumOfScans
+		, x.NumOfLookups
+		, s.NumOfInserts
+		, s.NumOfupdates
+		, s.NumOfDeletes	
+		, x.NumOfSeeks + x.NumOfScans + x.NumOfLookups As SumQuery
+		, s.NumOfInserts + s.NumOfupdates + s.NumOfDeletes As SumIUD
+	FROM
+	(
+		SELECT
+			IX.OBJECT_ID As ObjectId
+			, IX.name AS Index_Name
+			, IX.type_desc Index_Type
+			, IXUS.last_user_seek AS LastSeek
+			, IXUS.last_user_scan AS LastScan
+			, IXUS.last_user_lookup AS LastLookup
+			, IXUS.last_user_update AS LastUpdate
+			, IXUS.user_seeks AS NumOfSeeks
+			, IXUS.user_scans AS NumOfScans
+			, IXUS.user_lookups AS NumOfLookups
+			, ix.index_id
+		FROM
+			sys.indexes IX
+		INNER JOIN sys.dm_db_index_usage_stats IXUS
+			ON IXUS.index_id = IX.index_id 
+			AND IXUS.OBJECT_ID = IX.OBJECT_ID
+		INNER JOIN sys.dm_db_partition_stats PS
+			ON PS.object_id=IX.object_id
+		INNER JOIN sys.objects O
+			ON O.object_id = IX.object_id
+		WHERE
+			OBJECTPROPERTY(IX.OBJECT_ID,'IsUserTable') = 1
+			AND (@TableName IS NULL OR OBJECT_NAME(IX.OBJECT_ID) = @TableName)
+			AND (@IndexName IS NULL OR IX.name = @IndexName)
+			AND IX.is_primary_key = 0
+		GROUP BY
+			IX.OBJECT_ID
+			, IX.name 
+			, IX.type_desc
+			, IXUS.user_seeks 
+			, IXUS.user_scans
+			, IXUS.user_lookups
+			, IXUS.user_updates
+			, IXUS.last_user_seek
+			, IXUS.last_user_scan
+			, IXUS.last_user_lookup
+			, IXUS.last_user_update
+			, ix.index_id
+		) x
+		LEFT JOIN
+		(
+			SELECT 
+				IX.name  Index_Name
+				, SUM(PS.[used_page_count]) * 8 IndexSizeKB
+				, IXOS.LEAF_INSERT_COUNT NumOfInserts
+				, IXOS.LEAF_UPDATE_COUNT NumOfupdates
+				, IXOS.LEAF_DELETE_COUNT NumOfDeletes
+	   
+			FROM
+				SYS.DM_DB_INDEX_OPERATIONAL_STATS (NULL,NULL,NULL,NULL ) IXOS 
+			INNER JOIN SYS.INDEXES AS IX
+				ON IX.OBJECT_ID = IXOS.OBJECT_ID 
+				AND IX.INDEX_ID =    IXOS.INDEX_ID 
+			INNER JOIN sys.dm_db_partition_stats PS 
+				ON PS.object_id=IX.object_id
+			WHERE
+				OBJECTPROPERTY(IX.[OBJECT_ID],'IsUserTable') = 1
+				AND (@TableName IS NULL OR OBJECT_NAME(IX.OBJECT_ID) = @TableName)
+			GROUP BY
+				IXOS.OBJECT_ID
+				, IX.name
+				, IX.type_desc
+				, IXOS.LEAF_INSERT_COUNT
+				, IXOS.LEAF_UPDATE_COUNT
+				, IXOS.LEAF_DELETE_COUNT
+	) s
+	ON s.Index_Name = x.Index_Name
+)
+, CTE_keyCols
+AS
+(
+	SELECT 
+		o.object_id AS ObjectId
+		, ix.index_id AS IndexId
+		, STRING_AGG((ck.Name + IIF(ic.is_descending_key = 1, ' DESC', '')) , ', ') AS Cols 
+	FROM 
+		sys.index_columns ic
+		INNER JOIN sys.indexes ix
+			ON ix.object_id = ic.object_id 
+			AND ix.index_id = ic.index_id
+		INNER JOIN sys.columns ck 
+			ON ck.object_id = ic.object_id
+			AND ck.column_id = ic.column_id
+			AND ic.is_included_column = 0
+		INNER JOIN sys.objects o
+			ON o.object_id = ic.object_id
+	WHERE
+		(@TableName IS NULL OR OBJECT_NAME(ic.object_id) = @TableName)
+	GROUP BY
+		o.object_id
+		, ix.index_id
+), CTE_IncCols
+AS
+(
+	SELECT 
+		o.object_id AS ObjectId
+		, ix.index_id AS IndexId
+		, STRING_AGG((ck.Name + IIF(ic.is_descending_key = 1, ' DESC', '')) , ', ') AS Cols 
+	FROM 
+		sys.index_columns ic
+		INNER JOIN sys.indexes ix
+			ON ix.object_id = ic.object_id 
+			AND ix.index_id = ic.index_id
+		INNER JOIN sys.columns ck
+			ON ck.object_id = ic.object_id
+			AND ck.column_id = ic.column_id
+			AND ic.is_included_column = 1
+		INNER JOIN sys.objects o
+			ON o.object_id = ic.object_id
+	WHERE 
+		(@TableName IS NULL OR OBJECT_NAME(ic.object_id) = @TableName)
+	GROUP BY
+		o.object_id
+		, ix.index_id
+)
+Select
+	inf.Table_Name
+	, inf.Index_Name
+	, inf.Index_Type
+	, inf.IndexSizeKB
+
+	, inf.LastSeek
+	, inf.LastScan
+	, inf.LastLookup
+	, inf.LastUpdate
+
+	, inf.NumOfSeeks
+	, inf.NumOfScans
+	, inf.NumOfLookups
+
+	, inf.NumOfInserts
+	, inf.NumOfupdates
+	, inf.NumOfDeletes
+	, NumOfSeeks + NumOfScans + NumOfLookups As SumUsageInQuery
+	, ck.Cols As KeyCols
+	, ci.Cols AS IncludeCols
+	, SumQuery
+	, SumIUD
+	, IIF(SumQuery <= @IndexUsageDropThreshold, 'DROP INDEX ' + QUOTENAME(inf.Table_Name) + '.' + QUOTENAME(inf.Index_Name), '') As DropIndex
+from
+	CTE_IndexInfo inf
+INNER JOIN CTE_keyCols ck
+	ON ck.ObjectId = inf.ObjectId
+	AND ck.IndexId = inf.IndexId
+LEFT JOIN CTE_IncCols ci
+	ON ci.ObjectId = inf.ObjectId 
+	AND ci.IndexId = inf.IndexId
+ORDER BY
+	Inf.IndexSizeKB DESC
+	, NumOfSeeks + NumOfScans + NumOfLookups + inf.NumOfUpdates ASC
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

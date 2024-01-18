@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>GOD</Title>
+			<Shortcut>GOD</Shortcut>
+			<Description>Find objects by code</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal>
+					<ID>SearchString1</ID>
+					<ToolTip>SearchString 1</ToolTip>
+					<Default>XYZ1</Default>
+				</Literal>
+				<Literal>
+					<ID>SearchString2</ID>
+					<ToolTip>SearchString 2</ToolTip>
+					<Default>XYZ2</Default>
+				</Literal>
+				<Literal>
+					<ID>ExcludedObjectNames</ID>
+					<ToolTip>ExcludedObjectNames</ToolTip>
+					<Default></Default>
+				</Literal>
+				<Literal>
+					<ID>ExcludeNameContaining</ID>
+					<ToolTip>ExcludeNameContaining</ToolTip>
+					<Default></Default>
+				</Literal>
+
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+Declare
+@SearchString1 nvarChar(255) = '$SearchString1$'
+, @SearchString2 nvarChar(255) = '$SearchString2$'
+, @ExcludeObjectNames nVarchar(max) = '$ExcludedObjectNames$'
+, @ExcludeNameContaining nVarchar(1024) = '$ExcludeNameContaining$'
+IF @SearchString1 IS NULl Set @SearchString1 = 'XYZ'
+
+
+Declare @Exlude TABLE
+(
+	ObjectName sysname
+)
+
+If(ISNULL(@ExcludeObjectNames, '') != '')
+	SET @ExcludeObjectNames = CHAR(39) + REPLACE(@ExcludeObjectNames, CHAR(32), '') + CHAR(39)
+
+Declare
+@Ret Table(
+ObjectType nvarChar(255) null
+, ObjectName nVarChar(255) null
+, ObjectId int null
+, CreateDate datetime null
+, ModifyDate datetime null
+)
+
+
+declare
+@cmd nVarChar(max)
+, @Params nVarchar(255) = '@DynWebScriptExists int out'
+, @ScriptDatabase nVarChar(255)
+, @DynWebScriptExists int = 0
+, @dfn CHAR(2) =  CHAR(39) + CHAR(39)
+
+SET @Cmd = 'Select t.type, t.name, t.object_id, t.create_date, t.modify_date
+from sys.sql_modules m with(readuncommitted)
+join sys.objects t with(readuncommitted) on t.object_id=m.object_id 
+Where (REPLACE(REPLACE(REPLACE(REPLACE(definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ') LIKE ' + CHAR(39) +  '%' + @SearchString1 + '%'  + CHAR(39)
+
+IF(NULLIF(@SearchString2, '') IS NOT NULL)
+	SET @Cmd = @Cmd
+	+ CHAR(10) + 'OR REPLACE(REPLACE(REPLACE(REPLACE(definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ') LIKE ' + CHAR(39) +  '%' + @SearchString2 + '%'  + CHAR(39)
+
+If(ISNULL(@ExcludeObjectNames, '') != '')
+	SET @Cmd = @Cmd
+	+ CHAR(10) + ' AND NOT EXISTS(SELECT 1 FROM string_split(' + @ExcludeObjectNames + ', '','') WHERE [Value] = t.name)'
+
+SET @Cmd = @Cmd + ')'
+
+If(ISNULL(@ExcludeNameContaining, '') != '')
+	SET @Cmd = @Cmd
+	+ CHAR(10) + 'AND RIGHT(t.Name, ' + CONVERT(varchar, LEN(@ExcludeNameContaining)) + ') != ' + CHAR(39) + @ExcludeNameContaining + CHAR(39)
+
+SET @Cmd = @Cmd
++ CHAR(10) + 'ORDER BY t.name'
+
+INSERT INTO @Ret
+EXEC Sp_ExecuteSql @Cmd
+
+Select * from @ret
+
+
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

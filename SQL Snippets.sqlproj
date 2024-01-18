@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>SQL_Snippets</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{6d07d33a-5937-4c5f-bb54-8991a60e7dc6}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>SQL_Snippets</RootNamespace>
+    <AssemblyName>SQL_Snippets</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="Snippets" />
+    <Folder Include="Snippets\Objects" />
+    <Folder Include="Snippets\Other" />
+    <Folder Include="Snippets\ScriptParts" />
+    <Folder Include="Snippets\Security" />
+    <Folder Include="Snippets\Helpers" />
+    <Folder Include="Snippets\Optimize" />
+    <Folder Include="Snippets\Dba" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="_Add and use Snippets in SQL Server Management Studio.docx" />
+    <None Include="Snippets\Objects\Add Column to table.snippet" />
+    <None Include="Snippets\Objects\Add Default To Column.snippet" />
+    <None Include="Snippets\Objects\Create Procedure.snippet" />
+    <None Include="Snippets\Objects\Create Scalar Function.snippet" />
+    <None Include="Snippets\Objects\Create Table Function.snippet" />
+    <None Include="Snippets\Objects\Create Table.snippet" />
+    <None Include="Snippets\Objects\Create Trigger.snippet" />
+    <None Include="Snippets\Objects\Create View.snippet" />
+    <None Include="Snippets\Objects\Drop column.snippet" />
+    <None Include="Snippets\Other\AddParameter.snippet" />
+    <None Include="Snippets\ScriptParts\ConcatRows1.snippet" />
+    <None Include="Snippets\ScriptParts\ConcatRows2.snippet" />
+    <None Include="Snippets\ScriptParts\Create Cursor.snippet" />
+    <None Include="Snippets\ScriptParts\OpenXml.snippet" />
+    <None Include="Snippets\ScriptParts\TryCatchWithLogg.snippet" />
+    <None Include="Snippets\Security\GrantStoredProcedure.snippet" />
+    <None Include="Snippets\Security\GrantTable.snippet" />
+    <None Include="Snippets\Security\GrantUDEF.snippet" />
+    <None Include="Snippets\Security\GrantView.snippet" />
+    <None Include="Snippets\ScriptParts\PrimaryKeyWhile.snippet" />
+    <None Include="Snippets\Helpers\GetSpExecute.snippet" />
+    <None Include="Snippets\Helpers\GOD.snippet" />
+    <None Include="Snippets\Helpers\GetColsFrTableScript.snippet" />
+    <None Include="Snippets\Objects\Create Table Inline Function.snippet" />
+    <None Include="Snippets\Other\Header.snippet" />
+    <None Include="Snippets\Helpers\GetColsFromSelect.snippet" />
+    <None Include="Snippets\Helpers\GetSpParamSniff.snippet" />
+    <None Include="Snippets\Helpers\GetNHBErrSpExec.snippet" />
+    <None Include="Snippets\Objects\Add FK To Column.snippet" />
+    <None Include="Snippets\Helpers\FixColList.snippet" />
+    <None Include="Snippets\Optimize\Template.snippet" />
+    <None Include="Snippets\Helpers\Template.snippet" />
+    <None Include="Snippets\Objects\Template.snippet" />
+    <None Include="Snippets\Other\Template.snippet" />
+    <None Include="Snippets\ScriptParts\Template.snippet" />
+    <None Include="Snippets\Security\Template.snippet" />
+    <None Include="Snippets\Dba\Template.snippet" />
+    <None Include="Snippets\Optimize\Current ANSI Settings.snippet" />
+    <None Include="Snippets\Optimize\Current Running Queries.snippet" />
+    <None Include="Snippets\Optimize\Expensive Queries.snippet" />
+    <None Include="Snippets\Optimize\IndexAnalyse.snippet" />
+    <None Include="Snippets\Optimize\IndexDuplicates.snippet" />
+    <None Include="Snippets\Optimize\IndexFragmentation.snippet" />
+    <None Include="Snippets\Dba\IndexRebuild.snippet" />
+    <None Include="Snippets\Dba\SpsWithInvalidReferences.snippet" />
+    <None Include="Snippets\Helpers\GetCreateIndexOnFkColums.snippet" />
+  </ItemGroup>
+</Project>

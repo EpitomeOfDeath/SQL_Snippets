@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>GetCreateIndexOnFkColums</Title>
+			<Shortcut>gciofk</Shortcut>
+			<Description>Get Create index script for foreign key columns on a table</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+Declare
+@TblName sysname = ''		--ENTER EXISTING TABLE NAME HERE
+
+SELECT 'CREATE INDEX [IX_' + TABLE_NAME + '_' + COLUMN_NAME + '] ON ' + QUOTENAME(TABLE_NAME) + '(' + QUOTENAME(COLUMN_NAME) + ')'
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE TABLE_NAME = @TblName
+AND CONSTRAINT_NAME NOT LIKE 'PK%'
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>IndexRebuild</Title>
+			<Shortcut>ixrbld</Shortcut>
+			<Description>List Index rebuild statements</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+DECLARE
+@TableName sysname = NULL -- Enter a tablename for index rebuild wildcard search is used.
+, @IndexName sysname = NULL -- Enter a indexname for index rebuild wildcard search is used.
+
+SELECT
+'ALTER INDEX ' + QUOTENAME(i.name)
++ ' ON ' 
++ QUOTENAME(SCHEMA_NAME(o.schema_id))
++ '.'
++ QUOTENAME(o.name)
++ 'REBUILD WITH (FILLFACTOR = 100, MAXDOP = 0, 
+ONLINE = ON (WAIT_AT_LOW_PRIORITY (MAX_DURATION = 5 MINUTES, ABORT_AFTER_WAIT = NONE)), 
+RESUMABLE = ON);'
+, i.name
+, SCHEMA_NAME(o.schema_id)
+, o.name
+
+FROM sys.indexes i
+JOIN sys.objects o
+	ON o.object_id = i.object_id
+WHERE
+	i.type = 2
+	AND  o.is_ms_shipped = 0
+	AND (@TableName IS NULL OR(o.name LIKE @TableName))
+	AND (@IndexName IS NULl OR(i.name LIKE @IndexName))]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>SpsWithInvalidreferences</Title>
+			<Shortcut>spinvref</Shortcut>
+			<Description>List objects(Stored procedures, UDEF, trigger, View) with invalid references (Missing tables, Missing columns...)</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+SELECT DISTINCT
+	OBJECT_SCHEMA_NAME(referencing_id) As referencer_Schema
+	, OBJECT_NAME(referencing_id) AS [referencer]
+	, o.type
+	, referenced_entity_name AS [referenced]
+FROM sys.sql_expression_dependencies d
+JOIN sys.objects o
+	ON o.object_id = referencing_id
+WHERE is_ambiguous = 0
+    AND OBJECT_ID(ISNULL(referenced_schema_name, 'dbo') + '.' + referenced_entity_name) IS NULL
+    AND OBJECT_ID(ISNULL(referenced_schema_name, OBJECT_SCHEMA_NAME(referencing_id)) + '.' + referenced_entity_name) IS NULL
+    AND referenced_entity_name NOT IN (SELECT Name FROM sys.types WHERE is_user_defined = 1) -- avoid type false positives
+    AND referenced_entity_name not in ('deleted', 'inserted') -- avoid trigger false positives
+    AND referenced_database_name is null
+ORDER BY
+	OBJECT_NAME(referencing_id)
+	, referenced_entity_name
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

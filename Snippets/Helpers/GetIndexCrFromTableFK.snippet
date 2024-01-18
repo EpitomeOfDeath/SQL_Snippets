@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>GetIndexCrFromTableFK</Title>
+			<Shortcut>giftfk</Shortcut>
+			<Description>Get index creat scripts for foreign key columns</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal>
+					<ID>TableName</ID>
+					<ToolTip>Table name</ToolTip>
+					<Default>MyTable</Default>
+				</Literal>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+SELECT 'CREATE INDEX [IX_' + TABLE_NAME + '_' + COLUMN_NAME + '] ON ' + QUOTENAME(TABLE_NAME) + '(' + QUOTENAME(COLUMN_NAME) + ')'
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE TABLE_NAME = '$TableName$'
+AND CONSTRAINT_NAME NOT LIKE 'PK%'
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

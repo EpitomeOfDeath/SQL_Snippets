@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>GetSpParamSniff</Title>
+			<Shortcut>spsnf</Shortcut>
+			<Description>Get paramete sniffing aid for a stored procedure</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal>
+					<ID>StoredProcedure</ID>
+					<ToolTip>StoredProcedure name</ToolTip>
+					<Default>MySp</Default>
+				</Literal>
+
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+DECLARE @spName sysname = '' --Enter Sp Name here and execute
+
+Declare @t Table(p nVarchar(1024), wp nVarchar(1024), wpc nVarchar(1024), Eq nvarchar(1024), RowNo int IDENTITY(1, 1))
+
+INSERT INTO @t
+SELECT p.name, REPLACE(p.name, '@', '@wrk') + ' ' + UPPER(t.name), REPLACE(p.name, '@', '@wrk'), NULL from sys.parameters p
+Join sys.types t on t.user_type_id = p.user_type_id
+WHERE object_id = OBJECT_ID(@spName)
+ORDER BY parameter_id
+
+Update @t Set Eq = 'SET ' + wpc + ' = ' + p
+
+Select '/************* Parameter Sniffing *************/', -1 As RowNo, 0 As Grp
+UNION
+Select 'DECLARE', 0 As RowNo, 0 As Grp
+UNION
+SELECT wp, RowNo, 1 As Grp from @t
+
+UNION
+SELECT '', MAX(RowNo) + 1, 2 As Grp from @t
+
+UNION
+SELECT eq, RowNo, 3 As Grp from @t
+
+UNION
+Select '/************* Parameter Sniffing *************/', 999 As RowNo, 4 As Grp
+
+
+ORDER BY Grp, RowNo
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

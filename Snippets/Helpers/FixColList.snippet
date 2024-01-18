@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>FixColList</Title>
+			<Shortcut>fcl</Shortcut>
+			<Description>Formats Columnlist</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+DECLARE
+@CoList nVarchar(MAX) = '' --PASTE COLUMLIST HERE sample:'Col01, Col02,Col03'
+
+--InsertTime, Created, Updated, DateGroup, ProjectId, ItemId, [Type], [Status], WarehouseId, WarehouseLocationId, TrackerId, LocationSource, Lat, Lng, Radius, CalcLocationSource, CalcRadius, GatewayId, Rssi
+
+SET @CoList = Replace(Replace(Replace(Replace(@CoList, CHAR(32), ''), CHar(10), ''), CHar(13), ''), Char(9), '')
+
+DECLARE @tRet TABLE
+(
+	Col nVarchar(1024)
+	, RowId Int IDENTITY(1, 1)
+)
+INSERT INTO @tRet(Col)
+SELECT
+	[Value]
+FROM
+	string_split(@CoList, ',')
+
+SELECT
+	IIF(RowId = 1, '', ', ')
+	+ Col
+FROM
+@tRet
+Order by Rowid
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

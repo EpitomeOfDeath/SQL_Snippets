@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>GetColsFromSelect</Title>
+			<Shortcut>gcs</Shortcut>
+			<Description>Get different column formats from a Select statement script</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+Declare
+@selectCmd nvarchar(max) = ''	--ENTER Your CREATE TABLE SCRIPT HERE
+
+		SET @selectCmd = 'SELECT * INTO BITS_TMP_GEN_Code FROM(' + @selectCmd + ') x'
+BEGIN TRAN
+
+	IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'BITS_TMP_GEN_Code')
+	BEGIN
+		EXEC sp_executeSql @selectCmd
+	END
+
+
+	SELECT
+	IIF(ORDINAL_POSITION = 1, '', ', ')
+	 + COLUMN_NAME As SELECTLIST
+	, IIF(ORDINAL_POSITION = 1, '', ', ')
+	 + '@' + COLUMN_NAME + ' = ' + COLUMN_NAME As SELECTTOVARLIST
+	 , IIF(ORDINAL_POSITION = 1, '', ', ')
+	 + '@' + COLUMN_NAME + ' ' 
+	 + CASE 
+		WHEN DATA_TYPE LIKE '%CHAR%'
+			THEN + UPPER(DATA_TYPE) + '(' + IIF(CHARACTER_OCTET_LENGTH = -1, 'MAX', CONVERT(VARCHAR, CHARACTER_OCTET_LENGTH)) + ')'
+		WHEN DATA_TYPE LIKE '%DEC%'
+			THEN + UPPER(DATA_TYPE) + '(' + CONVERT(VARCHAR, NUMERIC_PRECISION) + ', ' + CONVERT(VARCHAR, NUMERIC_SCALE) + ')'
+		WHEN DATA_TYPE LIKE '%DATETIME2%'
+			THEN + UPPER(DATA_TYPE) + '(' + CONVERT(VARCHAR, DATETIME_PRECISION) + ')'
+		ELSE UPPER(DATA_TYPE)
+	 END
+	 As DECLAREVARLIST
+
+
+from INFORMATION_SCHEMA.COLUMNS WITH(READUNCOMMITTED) Where TABLE_NAME = 'BITS_TMP_GEN_Code'
+
+ROLLBACK TRAN
+
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">  
+<_locDefinition xmlns="urn:locstudio">  
+    <_locDefault _loc="locNone" />  
+    <_locTag _loc="locData">Title</_locTag>  
+    <_locTag _loc="locData">Description</_locTag>  
+    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">ToolTip</_locTag>  
+   <_locTag _loc="locData">Default</_locTag>  
+</_locDefinition>  
+<CodeSnippet Format="1.0.0">  
+<Header>  
+<Title>Create Table</Title>  
+                        <Shortcut>CreateTable</Shortcut>  
+<Description>Creates a new table</Description>  
+<Author>Micael Uthas</Author>  
+<SnippetTypes>  
+                                <SnippetType>SurroundsWith</SnippetType>  
+</SnippetTypes>  
+</Header>  
+<Snippet>
+  <Declarations>
+    <Literal>
+      <ID>Tablename</ID>
+      <ToolTip>Name of the table</ToolTip>
+      <Default>Sample_Table</Default>
+    </Literal>
+	  <Literal>
+		  <ID>RefTablename</ID>
+		  <ToolTip>Name of the refreced table</ToolTip>
+		  <Default>Ref</Default>
+	  </Literal>
+  </Declarations>
+<Code Language="SQL">
+  <![CDATA[
+if not exists (Select 1 from sys.objects where name='$Tablename$' and type='U')
+    CREATE TABLE [dbo].[$Tablename$](
+	    [Id] [bigint] IDENTITY(1,1) NOT NULL,
+	    [Created] [datetime2](0) NOT NULL,
+	    [CreatedBy] [nvarchar](255) NULL,
+	    [Updated] [datetime2](0) NULL,
+	    [UpdatedBy] [nvarchar](255) NULL,
+	    [ProjectId] [bigint] NOT NULL,
+        --, [$RefTablename$Id]  BIGINT NOT NULL
+    , CONSTRAINT [PK_$Tablename$] PRIMARY KEY CLUSTERED 
+    (
+      [Id] ASC
+    )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+    ) ON [PRIMARY]
+	GO
+
+
+----Add Foreign Key sample
+--ALTER TABLE [dbo].[$Tablename$]  WITH CHECK ADD  CONSTRAINT [FK__$Tablename$__$RefTablename$Id] FOREIGN KEY([$RefTablename$Id])
+--REFERENCES [dbo].[$RefTablename$] ([Id])
+--GO
+
+--ALTER TABLE [dbo].[$Tablename$] CHECK CONSTRAINT [FK__$Tablename$__$RefTablename$Id]
+--GO
+
+----Add Column Sample	
+--if not exists (select 1 from sys.columns where name='Column' and object_id=object_id('$Tablename$'))
+--  alter table $Tablename$ add Column nvarchar(50) null
+--Go
+
+----Add Default sample
+--If exists(Select 1 from INFORMATION_SCHEMA.COLUMNS Where COLUMN_NAME = 'Column' And TABLE_NAME = '$Tablename$' And COLUMN_DEFAULT is null)
+--	ALTER TABLE $Tablename$ ADD  DEFAULT ((DEFAULT)) FOR Column
+--GO
+
+----Drop index
+--If Exists(Select 1 From sys.indexes
+--Where name = 'IX_$Tablename$_$RefTablename$Id')
+--	Drop index $Tablename$.IX_$Tablename$_$RefTablename$Id
+--Go
+--
+
+---Create index
+--If Not Exists(Select 1 From sys.indexes
+--Where name = 'IX_$Tablename$_$RefTablename$Id')
+--	Create index IX_$Tablename$_$RefTablename$Id on $Tablename$(RefId)
+--Go
+]]>  
+</Code>  
+</Snippet>  
+</CodeSnippet>  
+</CodeSnippets>  

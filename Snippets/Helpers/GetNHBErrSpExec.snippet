@@ -13,7 +13,7 @@
 			<Title>GetNHBErrSpExec</Title>
 			<Shortcut>spnhexec</Shortcut>
 			<Description>Get sp execution string from nHibernate exception</Description>
-			<Author>Micael Uthas</Author>
+			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
 			</SnippetTypes>
@@ -22,18 +22,18 @@
 			<Code Language="SQL">
 				<![CDATA[
 DECLARE
-@Cmd nVarchar(max) = '' --Paste nHibernate execution information here
-, @SpCmd nVarchar(MAX)
+@Cmd NVARCHAR(max) = '' --Paste nHibernate execution information here
+, @SpCmd NVARCHAR(MAX)
 , @SpName sysname
-, @Firstpar nvarchar(1024)
+, @Firstpar NVARCHAR(1024)
 
-Declare @t Table(Part nvarchar(max), VarName nvarchar(1024), VarValue nVarchar(1024), RowNo int identity(1, 1))
+Declare @t Table(Part NVARCHAR(max), VarName NVARCHAR(1024), VarValue NVARCHAR(1024), RowNo int identity(1, 1))
 
 insert into @t
 Select [value], NULL, NULL from string_split(@cmd, ']')
 
 
-Update @t Set Part = SUBSTRING(Part	, CHARINDEX('[', Part) + 2, 4000)  WHERE RowNo = 1 
+Update @t SET Part = SUBSTRING(Part	, CHARINDEX('[', Part) + 2, 4000)  WHERE RowNo = 1 
 SELECT @SpCmd = Part FROM @t WHERE RowNo = 1
 
 Delete from @t Where CHARINDEX('SqlType:', Part) = 0
@@ -42,11 +42,11 @@ Delete from @t Where CHARINDEX('Name:', Part) = 0
 SET @SpName = LEFT(@SpCmd, CHARINDEX('@', @SpCmd) - 1)
 SET @SpName = TRIM(SUBSTRING(@SpName, CHARINDEX(' ', @SpName), 1024)) 
 
-UPDATE @t Set VarName = SUBSTRING(Part, CHARINDEX(':', Part) +1, 1024) Where RowNo > 1
+UPDATE @t SET VarName = SUBSTRING(Part, CHARINDEX(':', Part) +1, 1024) Where RowNo > 1
 UPDATE @t SET VarName = '@' + TRIM(LEFT(VarName, CHARINDEX('-', VarName) -2)) Where RowNo > 1
 
-UPDATE @t SEt VarValue = SUBSTRING(Part, CHARINDEX('value:', Part) + 6, 1024) Where RowNo > 1
-UPDATE @t Set VarValue = TRIM(LEFT(VarValue, CHARINDEX('[', VarValue) - 2)) Where RowNo > 1
+UPDATE @t SET VarValue = SUBSTRING(Part, CHARINDEX('value:', Part) + 6, 1024) Where RowNo > 1
+UPDATE @t SET VarValue = TRIM(LEFT(VarValue, CHARINDEX('[', VarValue) - 2)) Where RowNo > 1
 Select * from @t
 
 SELECT 'EXEC ' + @SpName, 0 as grp, 0 As rowNo

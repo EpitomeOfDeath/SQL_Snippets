@@ -13,7 +13,7 @@
 			<Title>GOD</Title>
 			<Shortcut>GOD</Shortcut>
 			<Description>Find objects by code</Description>
-			<Author>Micael Uthas</Author>
+			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
 			</SnippetTypes>
@@ -45,11 +45,11 @@
 			<Code Language="SQL">
 				<![CDATA[
 Declare
-@SearchString1 nvarChar(255) = '$SearchString1$'
-, @SearchString2 nvarChar(255) = '$SearchString2$'
-, @ExcludeObjectNames nVarchar(max) = '$ExcludedObjectNames$'
-, @ExcludeNameContaining nVarchar(1024) = '$ExcludeNameContaining$'
-IF @SearchString1 IS NULl Set @SearchString1 = 'XYZ'
+@SearchString1 NVARCHAR(255) = '$SearchString1$'
+, @SearchString2 NVARCHAR(255) = '$SearchString2$'
+, @ExcludeObjectNames NVARCHAR(max) = '$ExcludedObjectNames$'
+, @ExcludeNameContaining NVARCHAR(1024) = '$ExcludeNameContaining$'
+IF @SearchString1 IS NULl SET @SearchString1 = 'XYZ'
 
 
 Declare @Exlude TABLE
@@ -62,8 +62,8 @@ If(ISNULL(@ExcludeObjectNames, '') != '')
 
 Declare
 @Ret Table(
-ObjectType nvarChar(255) null
-, ObjectName nVarChar(255) null
+ObjectType NVARCHAR(255) null
+, ObjectName NVARCHAR(255) null
 , ObjectId int null
 , CreateDate datetime null
 , ModifyDate datetime null
@@ -71,9 +71,9 @@ ObjectType nvarChar(255) null
 
 
 declare
-@cmd nVarChar(max)
-, @Params nVarchar(255) = '@DynWebScriptExists int out'
-, @ScriptDatabase nVarChar(255)
+@cmd NVARCHAR(max)
+, @Params NVARCHAR(255) = '@DynWebScriptExists int out'
+, @ScriptDatabase NVARCHAR(255)
 , @DynWebScriptExists int = 0
 , @dfn CHAR(2) =  CHAR(39) + CHAR(39)
 

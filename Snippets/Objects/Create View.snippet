@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Title</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>Create View</Title>  
                         <Shortcut>CCVW</Shortcut>  
 <Description>Creates a view</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -41,7 +41,7 @@
   exec sp_executesql N'Create View [dbo].[$ViewName$] as select 1 as col01'
 GO
 
-Alter View [dbo].[$ViewName$]
+ALTER View [dbo].[$ViewName$]
 AS
 
 Select Distinct

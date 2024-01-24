@@ -13,7 +13,7 @@
 			<Title>Expensive queries</Title>
 			<Shortcut>expq</Shortcut>
 			<Description>Get expensive queries</Description>
-			<Author>Micael Uthas</Author>
+			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
 			</SnippetTypes>
@@ -27,7 +27,7 @@
 Declare
 @MillisecDivisor int = 1000 --dm_exec_query_stats times are in microseconds
 , @FromLastExecutionDate DATETIME2(0) = '2024-01-01 00:00:01' --Enter a date and tim from where to start looking
-, @ObjectName nVarchar(1024) = '%%'--Enter a specific object name to investigate
+, @ObjectName NVARCHAR(1024) = '%%'--Enter a specific object name to investigate
 
 DECLARE
 @Excluded Table(ObjectName sysname)
@@ -49,11 +49,11 @@ st.objectid
 , total_worker_time / @MillisecDivisor As total_worker_time
 , total_elapsed_time / @MillisecDivisor As total_elapsed_time
 , (total_elapsed_time / @MillisecDivisor) / execution_count avg_elapsed_time
-,SUBSTRING(st.text, (qs.statement_start_offset/2) + 1,
-((CASE statement_end_offset
+,SUBSTRING(st.text, (qs.statement_start_offSET/2) + 1,
+((CASE statement_end_offSET
 WHEN -1 THEN DATALENGTH(st.text)
-ELSE qs.statement_end_offset END
-- qs.statement_start_offset)/2) + 1) AS statement_text
+ELSE qs.statement_end_offSET END
+- qs.statement_start_offSET)/2) + 1) AS statement_text
 FROM sys.dm_exec_query_stats AS qs
 CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
 LEFT JOIN sys.objects o on o.object_id = st.objectid

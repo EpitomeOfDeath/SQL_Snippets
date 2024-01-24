@@ -13,7 +13,7 @@
 			<Title>GetSpParamSniff</Title>
 			<Shortcut>spsnf</Shortcut>
 			<Description>Get paramete sniffing aid for a stored procedure</Description>
-			<Author>Micael Uthas</Author>
+			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
 			</SnippetTypes>
@@ -29,34 +29,94 @@
 			</Declarations>
 			<Code Language="SQL">
 				<![CDATA[
-DECLARE @spName sysname = '' --Enter Sp Name here and execute
+/*
+	Enter the name of an existing stored procedure.
+	Enter a the spacing you prefer.
 
-Declare @t Table(p nVarchar(1024), wp nVarchar(1024), wpc nVarchar(1024), Eq nvarchar(1024), RowNo int IDENTITY(1, 1))
+	Generates:
+	1. CodeList for a parameter sniffing handler.
+
+	Author:Micael Uthas (uthas.com)
+*/
+DECLARE
+	@spName SYSNAME = '' --Enter Sp Name here.
+	, @Spacing INT = 3
+
+DECLARE @t Table
+(
+	ParameterName NVARCHAR(1024)
+	, workParameterDeclare NVARCHAR(1024)
+	, workParameterVar NVARCHAR(1024)
+	, Code NVARCHAR(1024)
+	, RowNo int IDENTITY(1, 1)
+)
 
 INSERT INTO @t
-SELECT p.name, REPLACE(p.name, '@', '@wrk') + ' ' + UPPER(t.name), REPLACE(p.name, '@', '@wrk'), NULL from sys.parameters p
-Join sys.types t on t.user_type_id = p.user_type_id
-WHERE object_id = OBJECT_ID(@spName)
-ORDER BY parameter_id
+SELECT
+	PARAMETER_NAME
+	, REPLACE(PARAMETER_NAME, '@', '@wrk')
+	+ ' '
+	+ UPPER(ISNULL(USER_DEFINED_TYPE_NAME, DATA_TYPE))
+	+ CASE
+		WHEN CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN
+			'(' + IIF(CHARACTER_MAXIMUM_LENGTH = -1, 'MAX', CONVERT(VARCHAR, CHARACTER_MAXIMUM_LENGTH)) + ')'
+		WHEN NUMERIC_PRECISION IS NOT NULL AND NUMERIC_SCALE > 0 AND CHARINDEX('MONEY', DATA_TYPE) = 0 THEN
+			'(' + CONVERT(VARCHAR, NUMERIC_PRECISION) + ', ' + CONVERT(VARCHAR, NUMERIC_SCALE) + ')'
+		WHEN DATETIME_PRECISION IS NOT NULL AND DATA_TYPE != 'DATETIME' THEN
+			'(' + CONVERT(VARCHAR, DATETIME_PRECISION) + ')'
+		ELSE
+			''
+		END
+	, REPLACE(PARAMETER_NAME, '@', '@wrk')
+	, NULL 
+FROM
+	INFORMATION_SCHEMA.PARAMETERS
+WHERE
+	SPECIFIC_NAME = @spName
 
-Update @t Set Eq = 'SET ' + wpc + ' = ' + p
+UPDATE @t SET Code = 'SET ' + workParameterVar + ' = ' + ParameterName
 
-Select '/************* Parameter Sniffing *************/', -1 As RowNo, 0 As Grp
+SELECT
+	Code
+FROM
+(
+SELECT
+	'/************* Parameter Sniffing *************/' AS Code
+	, -1 AS RowNo
+	, 0 AS Grp
 UNION
-Select 'DECLARE', 0 As RowNo, 0 As Grp
+SELECT
+	'DECLARE'
+	, 0
+	, 0
 UNION
-SELECT wp, RowNo, 1 As Grp from @t
-
+SELECT
+	SPACE(@Spacing) + IIF(RowNo != 1, ', ', '')
+	+ workParameterDeclare
+	, RowNo
+	, 1
+FROM
+	@t
 UNION
-SELECT '', MAX(RowNo) + 1, 2 As Grp from @t
-
+SELECT
+	''
+	, MAX(RowNo) + 1
+	, 2
+FROM
+	@t
 UNION
-SELECT eq, RowNo, 3 As Grp from @t
-
+SELECT
+	Code
+	, RowNo
+	, 3
+FROM
+	@t
 UNION
-Select '/************* Parameter Sniffing *************/', 999 As RowNo, 4 As Grp
-
-
+Select
+	'/************* Parameter Sniffing *************/'
+	, 999
+	, 4
+) c
 ORDER BY Grp, RowNo
 ]]>
 			</Code>

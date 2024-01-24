@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>GetColsFrTableScript</Title>
+			<Shortcut>gtc</Shortcut>
+			<Description>Get different column formats from table or create table script</Description>
+			<Author>Your Name</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+/*
+	Enter a table name in @TableName.
+	Enter a prefix for the columns if you need one.
+
+	Generates:
+	1. ColumnList for the columns in the table.
+	2. DECLARE statements for variables representing the columns in the table.
+	3. SET variable (@ColVar = Col) values from the columns in the table.
+
+	Author:Micael Uthas (uthas.com)
+*/
+DECLARE
+	@TableName SYSNAME = 'item'	--ENTER EXISTING TABLE NAME HERE
+	, @Prefix NVARCHAR(100) = '' --Add Alias prefix
+
+IF TRIM(@Prefix)  = ''
+	SET @Prefix = NULL
+
+SELECT
+	IIF(ORDINAL_POSITION = 1, '', ', ')
+	+ ISNULL(@Prefix + '.', '') + COLUMN_NAME AS SELECTLIST
+
+	, IIF(ORDINAL_POSITION != 1, ', ', '')
+	+ '@' + COLUMN_NAME
+	+ ' '
+	+ UPPER(DATA_TYPE)
+	+ CASE
+		WHEN CHARACTER_MAXIMUM_LENGTH IS NOT NULL THEN
+			'(' + IIF(CHARACTER_MAXIMUM_LENGTH = -1, 'MAX', CONVERT(VARCHAR, CHARACTER_MAXIMUM_LENGTH)) + ')'
+		WHEN NUMERIC_PRECISION IS NOT NULL AND NUMERIC_SCALE > 0 AND CHARINDEX('MONEY', DATA_TYPE) = 0 THEN
+			'(' + CONVERT(VARCHAR, NUMERIC_PRECISION) + ', ' + CONVERT(VARCHAR, NUMERIC_SCALE) + ')'
+		WHEN DATETIME_PRECISION IS NOT NULL AND DATA_TYPE != 'DATETIME' THEN
+			'(' + CONVERT(VARCHAR, DATETIME_PRECISION) + ')'
+		ELSE
+			''
+		END
+	AS DECLAREVARLIST
+
+	, IIF(ORDINAL_POSITION = 1, '', ', ')
+	+ '@' + COLUMN_NAME + ' = ' + ISNULL(@Prefix + '.', '') + COLUMN_NAME AS SELECTTOVARLIST
+
+FROM
+	INFORMATION_SCHEMA.COLUMNS
+WHERE
+	TABLE_NAME = @TableName
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

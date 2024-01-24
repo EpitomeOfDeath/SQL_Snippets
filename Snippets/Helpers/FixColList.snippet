@@ -13,7 +13,7 @@
 			<Title>FixColList</Title>
 			<Shortcut>fcl</Shortcut>
 			<Description>Formats Columnlist</Description>
-			<Author>Micael Uthas</Author>
+			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
 			</SnippetTypes>
@@ -23,30 +23,44 @@
 			</Declarations>
 			<Code Language="SQL">
 				<![CDATA[
+/*
+	Enter a columnlist from a SELECT statement in @ColumnList.
+	!!Add a WHERE 1 = 2 CLAUSE to avoid data loading.
+
+	Generates:
+	A well formatted columnlist for a SELECT statement
+
+	Author:Micael Uthas (uthas.com)
+*/
+
 DECLARE
-@CoList nVarchar(MAX) = '' --PASTE COLUMLIST HERE sample:'Col01, Col02,Col03'
+	@ColumnList NVARCHAR(MAX) = '' --PASTE COLUMLIST HERE sample:'Col01, Col02,Col03'
 
---InsertTime, Created, Updated, DateGroup, ProjectId, ItemId, [Type], [Status], WarehouseId, WarehouseLocationId, TrackerId, LocationSource, Lat, Lng, Radius, CalcLocationSource, CalcRadius, GatewayId, Rssi
+SET @ColumnList = REPLACE(REPLACE(REPLACE(REPLACE(@ColumnList, CHAR(32), ''), CHAR(10), ''), CHAR(13), ''), CHAR(9), '')
 
-SET @CoList = Replace(Replace(Replace(Replace(@CoList, CHAR(32), ''), CHar(10), ''), CHar(13), ''), Char(9), '')
-
-DECLARE @tRet TABLE
+DECLARE
+	@tRet
+TABLE
 (
-	Col nVarchar(1024)
+	Col NVARCHAR(1024)
 	, RowId Int IDENTITY(1, 1)
 )
-INSERT INTO @tRet(Col)
+INSERT INTO @tRet
+	(
+		Col
+	)
 SELECT
 	[Value]
 FROM
-	string_split(@CoList, ',')
+	string_split(@ColumnList, ',')
 
 SELECT
 	IIF(RowId = 1, '', ', ')
 	+ Col
 FROM
-@tRet
-Order by Rowid
+	@tRet
+ORDER BY
+	Rowid
 ]]>
 			</Code>
 		</Snippet>

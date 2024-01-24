@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Title</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>Create Scalar function</Title>  
                         <Shortcut>CreateSFN</Shortcut>  
 <Description>Creates a scalar UDEF</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -32,10 +32,11 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 /*
-SELECT $UDEFName$
-(
- 123
-)
+SELECT
+    $UDEFName$
+    (
+        0
+    )
 ------------------------------------------------------------------------------------------------------
 Description: 
 Created by:
@@ -46,16 +47,16 @@ Who     When        What
 */
 CREATE OR ALTER Function [dbo].[$UDEFName$]
 (
-   @ProjectId BIGINT
+   @SomeId BIGINT
 )
 RETURNS BIT
-Begin
+BEGIN
 
-DECLARE
-    @Ret BIT
+    DECLARE
+        @Ret BIT
 	
 	RETURN @Ret
-End
+END
 ]]>  
 </Code>  
 </Snippet>  

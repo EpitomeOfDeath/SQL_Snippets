@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Add column to table</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>Add Default to column</Title>  
                         <Shortcut>ADDDEFTOCOL</Shortcut>  
 <Description>Add Default to a column if it has no default</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -27,7 +27,7 @@
     </Literal>
 	  <Literal>
 		  <ID>ColumnX</ID>
-		  <ToolTip>Name of the column to alter</ToolTip>
+		  <ToolTip>Name of the column to ALTER</ToolTip>
 		  <Default>ColumnX</Default>
 	  </Literal>
 	  <Literal>
@@ -37,7 +37,7 @@
 	  </Literal>
   </Declarations>
 <Code Language="SQL">
-  <![CDATA[IF EXISTS (Select 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$Tablename$' AND COLUMN_NAME='$ColumnX$' AND COLUMN_DEFAULT IS NULL)
+  <![CDATA[IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '$Tablename$' AND COLUMN_NAME='$ColumnX$' AND COLUMN_DEFAULT IS NULL)
 	ALTER TABLE [dbo].[$Tablename$] ADD DEFAULT ($Default$) FOR  $ColumnX$
 Go
 ]]>  

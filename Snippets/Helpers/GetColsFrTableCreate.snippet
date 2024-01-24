@@ -10,9 +10,9 @@
 	</_locDefinition>
 	<CodeSnippet Format="1.0.0">
 		<Header>
-			<Title>GetColsFromSelect</Title>
-			<Shortcut>gcs</Shortcut>
-			<Description>Get different column formats from a Select statement script</Description>
+			<Title>GetColsFrTableScript</Title>
+			<Shortcut>gtc</Shortcut>
+			<Description>Get different column formats from table or create table script</Description>
 			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
@@ -22,39 +22,47 @@
 			<Code Language="SQL">
 				<![CDATA[
 /*
-	Enter a complete query in @SelectStmnt.
+	Enter a CREATE TABLE Statement in @CreateTableStmnt.
 	Enter a prefix for the columns if you need one.
 
-	!!Add a WHERE 1 = 2 CLAUSE to avoid data loading.
-
 	Generates:
-	1. ColumnList for the columns in the SELECT Statement.
-	2. DECLARE statements for variables representing the columns in the SELECT Statement.
-	3. SET variable (@ColVar = Col) values from the columns in the SELECT Statement.
+	1. ColumnList for the columns in the table.
+	2. DECLARE statements for variables representing the columns in the table.
+	3. SET variable (@ColVar = Col) values from the columns in the table.
 
 	Author:Micael Uthas (uthas.com)
 */
 DECLARE
-	@SelectStmnt NVARCHAR(MAX) = ''	--ENTER Your Query here
-	, @TableName SYSNAME = 'QuickDev_TABLE_' + REPLACE(CONVERT(VARCHAR(38), NEWID()), '-', '')
+	@CreateTableStmnt NVARCHAR(max) = ''	--ENTER Your CREATE TABLE SCRIPT HERE
 	, @Prefix NVARCHAR(100) = '' --Add Alias prefix
-SET
-	@SelectStmnt = 'SELECT * INTO ' + @TableName + ' FROM(' + @SelectStmnt + ') x'
+
+	, @TableName SYSNAME = 'QuickDev_TABLE_' + REPLACE(CONVERT(VARCHAR(38), NEWID()), '-', '')
+	, @CreateTableStmntComp NVARCHAR(MAX)
+	, @TableNameTemp SYSNAME
+
+SET @CreateTableStmntComp = REPLACE(REPLACE(REPLACE(REPLACE(@CreateTableStmnt, CHAR(10), ''), CHAR(13), ''), CHAR(9), ''), CHAR(32), '')
 
 IF TRIM(@Prefix)  = ''
 	SET @Prefix = NULL
 
 BEGIN TRAN
 
-	IF NOT EXISTS(
-		SELECT 
-			1 
-		FROM
-			INFORMATION_SCHEMA.TABLES 
-		WHERE
-			TABLE_NAME = @TableName)
+	IF(Charindex('#', @CreateTableStmnt) > 0)
 	BEGIN
-		EXEC sp_executeSql @SelectStmnt
+		SET @TableNameTemp = SUBSTRING(@CreateTableStmntComp, CHARINDEX('#', @CreateTableStmntComp), 255)
+		SET @TableNameTemp = LEFT(@TableNameTemp, CHARINDEX('(', @TableNameTemp) -1)
+		SET @CreateTableStmnt = REPLACE(@CreateTableStmnt, @TableNameTemp, @TableName)
+	END ELSE
+	BEGIN
+		SET @TableNameTemp = SUBSTRING(@CreateTableStmntComp, CHARINDEX('CREATETABLE', @CreateTableStmntComp), 255)
+		SET @TableNameTemp = REPLACE(@TableNameTemp, 'CREATETABLE', '')
+		SET @TableNameTemp = LEFT(@TableNameTemp, CHARINDEX('(', @TableNameTemp) -1)
+		SET @CreateTableStmnt = REPLACE(@CreateTableStmnt, @TableNameTemp, @TableName)
+	END
+
+	IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = @TableName)
+	BEGIN
+		EXEC sp_executeSql @CreateTableStmnt
 	END
 
 	SELECT

@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Title</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>Create Trigger</Title>  
                         <Shortcut>CRTR</Shortcut>  
 <Description>Creates a trigger</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -31,9 +31,9 @@
     <Default>TriggerType</Default>
   </Literal>
   <Literal>
-    <ID>Micael Uthas</ID>
+    <ID>Your Name</ID>
     <ToolTip>Name of author</ToolTip>
-    <Default>Micael Uthas</Default>
+    <Default>Your Name</Default>
   </Literal>
 </Declarations>  
 <Code Language="SQL">
@@ -56,20 +56,20 @@ go
    Sign     Date      Comment
   
 ------------------------------------------------------------------------------------------------------*/
-Alter trigger $TableName$_$TriggerType$ on $TableName$ for $TriggerType$
+ALTER trigger $TableName$_$TriggerType$ on $TableName$ for $TriggerType$
 as
 begin
-  declare @ErrMsg               nvarchar(max)
-          , @Obj                nvarchar(255)
+  declare @ErrMsg               NVARCHAR(max)
+          , @Obj                NVARCHAR(255)
           , @ErrorLine          int
           , @N                  char(2)
           , @dbc                int
           , @dbe                int
-          , @Message            nvarchar(max)
+          , @Message            NVARCHAR(max)
           , @Enter_Trancount    int
           , @NestLevel          varchar(10)
 		  
-          , @TrgCol             nvarchar(50)
+          , @TrgCol             NVARCHAR(50)
 					
   select  @N = char(13) + char(10)
           , @Enter_Trancount = @@TRANCOUNT

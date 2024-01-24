@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Title</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>Create Table Function</Title>  
                         <Shortcut>CreateTFN</Shortcut>  
 <Description>Creates a Table UDEF</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -26,9 +26,9 @@
     <Default>TFN_REPLACE</Default>  
   </Literal>
   <Literal>
-    <ID>Micael Uthas</ID>
+    <ID>Your Name</ID>
     <ToolTip>Name of author</ToolTip>
-    <Default>Micael Uthas</Default>
+    <Default>Your Name</Default>
   </Literal>
   <Literal>
     <ID>column1</ID>
@@ -38,7 +38,7 @@
   <Literal>
     <ID>datatype1</ID>
     <ToolTip>Data type of the column</ToolTip>
-    <Default>nvarchar(50) = null</Default>
+    <Default>NVARCHAR(50) = null</Default>
   </Literal>
   <Literal>
     <ID>column2</ID>
@@ -48,7 +48,7 @@
   <Literal>
     <ID>datatype2</ID>
     <ToolTip>Data type of the column</ToolTip>
-    <Default>nvarchar(50) = null</Default>
+    <Default>NVARCHAR(50) = null</Default>
   </Literal>
   <Literal>
     <ID>text</ID>
@@ -62,49 +62,39 @@
   </Literal>
 </Declarations>  
 <Code Language="SQL">
-  <![CDATA[if not exists(select 1 from sys.objects where name = '$UDEFName$')
-	exec sp_executesql N'Create function [dbo].[$UDEFName$]() returns @ValueTable table ([Value] nvarchar(Max)) As Begin return end'
-go
-
-Set ANSI_NULLS ON
+  <![CDATA[
+SET ANSI_NULLS ON
 GO
-Set QUOTED_IDENTIFIER ON
+SET QUOTED_IDENTIFIER ON
 GO
 /*
-Select * from $UDEFName$
-(
- '0'
-, '0'
-, '0'
-)
+SELECT
+    *
+FROM
+    $UDEFName$
+    (
+        0
+    )
 ------------------------------------------------------------------------------------------------------
-   Description: 
-   Created by: $author$
-  
-   Changes
-   Sign     Date      Comment
-  
+Description: 
+Created by:
+
+Changes
+Who     When        What
 ------------------------------------------------------------------------------------------------------
 */
-Alter Function [dbo].[$UDEFName$]
+CREATE OR ALTER FUNCTION [dbo].[$UDEFName$]
 (
-  @ProjectId BIGINT
+  @SomeId BIGINT
 )
-returns @ValueTable table ([Value] nvarchar(Max))
-Begin
+RETURNS @ValueTable TABLE ([Value] NVARCHAR(Max))
+BEGIN
 
-DECLARE
-  -----------------------------------
-  ---          $text$           ---
-  -----------------------------------  
-   @$column1$          $datatype1$
-  ,@$column2$          $datatype2$
-  -----------------------------------
-  ---            Code             ---
-  -----------------------------------
+    INSERT INTO @ValueTable
+	VALUES('DATA')
   
-  Return
-End
+    RETURN
+END
 ]]>  
 </Code>  
 </Snippet>  

@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Add column to table</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>ConcatRows1</Title>  
                         <Shortcut>ConcatNoLoop</Shortcut>  
 <Description>Generate a string from a column in a table rows with a separator between records.</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -33,11 +33,11 @@
   </Declarations>
 <Code Language="SQL">
   <![CDATA[DECLARE
-@ConCatStr nVarchar(Max)
-,@Separator nVarchar(255)
+@ConCatStr NVARCHAR(Max)
+,@Separator NVARCHAR(255)
  
-set @ConCatStr = ''
-set @Separator = Char(10) 
+SET @ConCatStr = ''
+SET @Separator = Char(10) 
 
 select @ConCatStr = @ConCatStr + case @ConCatStr when '' then '' else @Separator end + 
 ColumnX from TableX where 1 = 2

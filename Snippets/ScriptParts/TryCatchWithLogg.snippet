@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Title</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>TryCatch</Title>  
                         <Shortcut></Shortcut>  
 <Description>Trycatch with error logging.</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
     <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -27,7 +27,7 @@
 	Declare
 	@ErrorHndlType int = 1
 	, @EnterTrancount int = @@TRANCOUNT
-	, @ErrorLogText nVarchar(Max)
+	, @ErrorLogText NVARCHAR(Max)
 	
 	begin try
 	  Print 'DoStuff'
@@ -35,7 +35,7 @@
 		While @@TRANCOUNT > @EnterTrancount
 			Rollback tran
 	
-		Set @ErrorLogText =
+		SET @ErrorLogText =
 		'Error occured when running job:'	+ Isnull(@JobName, 'NA')
 		+ @NewLine + 'ERROR_NUMBER = '		+ Convert(varchar, ERROR_NUMBER())
 		+ @NewLine + 'ERROR_SEVERITY = '	+ Convert(varchar, ERROR_SEVERITY())

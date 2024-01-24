@@ -13,7 +13,7 @@
 			<Title>GetCreateIndexOnFkColums</Title>
 			<Shortcut>gciofk</Shortcut>
 			<Description>Get Create index script for foreign key columns on a table</Description>
-			<Author>Micael Uthas</Author>
+			<Author>Your Name</Author>
 			<SnippetTypes>
 				<SnippetType>SurroundsWith</SnippetType>
 			</SnippetTypes>
@@ -21,13 +21,24 @@
 		<Snippet>
 			<Code Language="SQL">
 				<![CDATA[
-Declare
-@TblName sysname = ''		--ENTER EXISTING TABLE NAME HERE
+/*
+	Enter a table name in @TableName
 
-SELECT 'CREATE INDEX [IX_' + TABLE_NAME + '_' + COLUMN_NAME + '] ON ' + QUOTENAME(TABLE_NAME) + '(' + QUOTENAME(COLUMN_NAME) + ')'
-FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE TABLE_NAME = @TblName
-AND CONSTRAINT_NAME NOT LIKE 'PK%'
+	Generates:
+	1. A list of CREATE INDEX statements for the Foreign Key columns
+
+	Author:Micael Uthas (uthas.com)
+*/
+DECLARE
+	@TableName SYSNAME = '' --ENTER EXISTING TABLE NAME HERE
+
+SELECT
+	'CREATE INDEX ' + QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME('IX_' + cu.TABLE_NAME + '_' + cu.COLUMN_NAME) + ' ON ' + QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(cu.TABLE_NAME) + '(' + QUOTENAME(cu.COLUMN_NAME) + ')'
+FROM
+	INFORMATION_SCHEMA.KEY_COLUMN_USAGE cu
+WHERE
+	TABLE_NAME = @TableName
+	AND CONSTRAINT_NAME NOT LIKE 'PK%'
 ]]>
 			</Code>
 		</Snippet>

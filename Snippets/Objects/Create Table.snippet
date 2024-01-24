@@ -4,7 +4,7 @@
     <_locDefault _loc="locNone" />  
     <_locTag _loc="locData">Title</_locTag>  
     <_locTag _loc="locData">Description</_locTag>  
-    <_locTag _loc="locData">Micael Uthas</_locTag>  
+    <_locTag _loc="locData">Your Name</_locTag>  
     <_locTag _loc="locData">ToolTip</_locTag>  
    <_locTag _loc="locData">Default</_locTag>  
 </_locDefinition>  
@@ -13,7 +13,7 @@
 <Title>Create Table</Title>  
                         <Shortcut>CreateTable</Shortcut>  
 <Description>Creates a new table</Description>  
-<Author>Micael Uthas</Author>  
+<Author>Your Name</Author>  
 <SnippetTypes>  
                                 <SnippetType>SurroundsWith</SnippetType>  
 </SnippetTypes>  
@@ -37,9 +37,9 @@ if not exists (Select 1 from sys.objects where name='$Tablename$' and type='U')
     CREATE TABLE [dbo].[$Tablename$](
 	    [Id] [bigint] IDENTITY(1,1) NOT NULL,
 	    [Created] [datetime2](0) NOT NULL,
-	    [CreatedBy] [nvarchar](255) NULL,
+	    [CreatedBy] [NVARCHAR](255) NULL,
 	    [Updated] [datetime2](0) NULL,
-	    [UpdatedBy] [nvarchar](255) NULL,
+	    [UpdatedBy] [NVARCHAR](255) NULL,
 	    [ProjectId] [bigint] NOT NULL,
         --, [$RefTablename$Id]  BIGINT NOT NULL
     , CONSTRAINT [PK_$Tablename$] PRIMARY KEY CLUSTERED 
@@ -60,7 +60,7 @@ if not exists (Select 1 from sys.objects where name='$Tablename$' and type='U')
 
 ----Add Column Sample	
 --if not exists (select 1 from sys.columns where name='Column' and object_id=object_id('$Tablename$'))
---  alter table $Tablename$ add Column nvarchar(50) null
+--  ALTER table $Tablename$ add Column NVARCHAR(50) null
 --Go
 
 ----Add Default sample

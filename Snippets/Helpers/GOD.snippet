@@ -44,15 +44,28 @@
 			</Declarations>
 			<Code Language="SQL">
 				<![CDATA[
-Declare
-@SearchString1 NVARCHAR(255) = '$SearchString1$'
-, @SearchString2 NVARCHAR(255) = '$SearchString2$'
-, @ExcludeObjectNames NVARCHAR(max) = '$ExcludedObjectNames$'
-, @ExcludeNameContaining NVARCHAR(1024) = '$ExcludeNameContaining$'
-IF @SearchString1 IS NULl SET @SearchString1 = 'XYZ'
+/*
+	Enter the text to find in @SearchString1.
+	if you want to combine two texts add the second text in @SearchString2.
+	Enter excluded object names as a commaseparated list in @ExcludeObjectNames
+	Enter the part of object names that should be excluded in @ExcludeNameContaining
+
+	Finds:
+	Objects with the searched text in it´s code.
+
+	Author:Micael Uthas (uthas.com)
+*/
+DECLARE
+@SearchString1 NVARCHAR(255) = ''
+, @SearchString2 NVARCHAR(255) = ''
+, @ExcludeObjectNames NVARCHAR(max) = ''
+, @ExcludeNameContaining NVARCHAR(1024) = ''
+
+IF @SearchString1 IS NULL SET @SearchString1 = 'XYZ'
+IF @SearchString2 IS NULL SET @SearchString2 = 'XYZ'
 
 
-Declare @Exlude TABLE
+DECLARE @Exlude TABLE
 (
 	ObjectName sysname
 )
@@ -60,41 +73,51 @@ Declare @Exlude TABLE
 If(ISNULL(@ExcludeObjectNames, '') != '')
 	SET @ExcludeObjectNames = CHAR(39) + REPLACE(@ExcludeObjectNames, CHAR(32), '') + CHAR(39)
 
-Declare
-@Ret Table(
-ObjectType NVARCHAR(255) null
-, ObjectName NVARCHAR(255) null
-, ObjectId int null
-, CreateDate datetime null
-, ModifyDate datetime null
-)
+DECLARE @Ret
+	TABLE
+	(
+		ObjectType NVARCHAR(255) null
+		, ObjectName NVARCHAR(255) null
+		, ObjectId int null
+		, CreateDate datetime null
+		, ModifyDate datetime null
+	)
 
 
-declare
+DECLARE
 @cmd NVARCHAR(max)
 , @Params NVARCHAR(255) = '@DynWebScriptExists int out'
 , @ScriptDatabase NVARCHAR(255)
 , @DynWebScriptExists int = 0
 , @dfn CHAR(2) =  CHAR(39) + CHAR(39)
 
-SET @Cmd = 'Select t.type, t.name, t.object_id, t.create_date, t.modify_date
-from sys.sql_modules m with(readuncommitted)
-join sys.objects t with(readuncommitted) on t.object_id=m.object_id 
-Where (REPLACE(REPLACE(REPLACE(REPLACE(definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ') LIKE ' + CHAR(39) +  '%' + @SearchString1 + '%'  + CHAR(39)
+SET @Cmd = 'SELECT
+	t.type
+	, t.name
+	, t.object_id
+	, t.create_date
+	, t.modify_date
+FROM
+	sys.sql_modules m
+INNER JOIN
+	sys.objects t
+		ON t.object_id=m.object_id 
+WHERE
+	(REPLACE(REPLACE(REPLACE(REPLACE(definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ') LIKE ' + CHAR(39) +  '%' + @SearchString1 + '%'  + CHAR(39)
 
 IF(NULLIF(@SearchString2, '') IS NOT NULL)
 	SET @Cmd = @Cmd
 	+ CHAR(10) + 'OR REPLACE(REPLACE(REPLACE(REPLACE(definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ') LIKE ' + CHAR(39) +  '%' + @SearchString2 + '%'  + CHAR(39)
 
-If(ISNULL(@ExcludeObjectNames, '') != '')
+IF(ISNULL(@ExcludeObjectNames, '') != '')
 	SET @Cmd = @Cmd
 	+ CHAR(10) + ' AND NOT EXISTS(SELECT 1 FROM string_split(' + @ExcludeObjectNames + ', '','') WHERE [Value] = t.name)'
 
 SET @Cmd = @Cmd + ')'
 
-If(ISNULL(@ExcludeNameContaining, '') != '')
+IF(ISNULL(@ExcludeNameContaining, '') != '')
 	SET @Cmd = @Cmd
-	+ CHAR(10) + 'AND RIGHT(t.Name, ' + CONVERT(varchar, LEN(@ExcludeNameContaining)) + ') != ' + CHAR(39) + @ExcludeNameContaining + CHAR(39)
+	+ CHAR(10) + 'AND RIGHT(t.Name, ' + CONVERT(VARCHAR, LEN(@ExcludeNameContaining)) + ') != ' + CHAR(39) + @ExcludeNameContaining + CHAR(39)
 
 SET @Cmd = @Cmd
 + CHAR(10) + 'ORDER BY t.name'
@@ -102,7 +125,10 @@ SET @Cmd = @Cmd
 INSERT INTO @Ret
 EXEC Sp_ExecuteSql @Cmd
 
-Select * from @ret
+SELECT
+	*
+FROM
+	@ret
 
 
 ]]>

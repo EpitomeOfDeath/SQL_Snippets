@@ -37,68 +37,61 @@
   </Literal>
 </Declarations>  
 <Code Language="SQL">
-  <![CDATA[/********************************
-***  $TableName$
-     $TriggerType$ TRIGGER       *******
-*********************************/
-if not exists (select 1 from sys.objects where name='$TableName$_$TriggerType$' and type='TR')
-  exec sp_executesql N'create trigger $TableName$_$TriggerType$ on $TableName$ for $TriggerType$
-as
-begin
-  print ''created''
-End'
-go
-/*------------------------------------------------------------------------------------------------------
-   Description: 
-   Created by: $author$
+  <![CDATA[SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/*
+EXEC $ProcedureName$
+	@ProjectId = NULL
+	, @ItemTypeId  = NULL
+------------------------------------------------------------------------------------------------------
+Description: 
+Created by:
   
-   Changes
-   Sign     Date      Comment
-  
-------------------------------------------------------------------------------------------------------*/
-ALTER trigger $TableName$_$TriggerType$ on $TableName$ for $TriggerType$
-as
-begin
-  declare @ErrMsg               NVARCHAR(max)
-          , @Obj                NVARCHAR(255)
-          , @ErrorLine          int
-          , @N                  char(2)
-          , @dbc                int
-          , @dbe                int
-          , @Message            NVARCHAR(max)
-          , @Enter_Trancount    int
-          , @NestLevel          varchar(10)
-		  
-          , @TrgCol             NVARCHAR(50)
-					
-  select  @N = char(13) + char(10)
-          , @Enter_Trancount = @@TRANCOUNT
-          , @Obj = 'SQL Object: ' + OBJECT_NAME(@@PROCID) 
-          , @dbc = 0
-          , @dbe = 0
-          , @ErrMsg=''
-          , @Nestlevel=convert(varchar(10),@@nestlevel)
+Changes
+Who     When        What
+------------------------------------------------------------------------------------------------------
+*/
+CREATE OR ALTER trigger $TableName$_$TriggerType$
+	ON $TableName$ 
+	FOR $TriggerType$
+AS
+BEGIN
+  DECLARE
+	@ErrMsg               NVARCHAR(max)
+    , @Message            NVARCHAR(max)
+    , @Enter_Trancount    INT
+    , @NestLevel          VARCHAR(10)
+		  					
+  SELECT
+	@Enter_Trancount = @@TRANCOUNT
+	, @ErrMsg = ''
+	, @Nestlevel = CONVERT(VARCHAR(10), @@nestlevel)
 
-  --if UPDATE(No_Trigger_Exec) --manage recursivity
-  --  return
+  --IF UPDATE(No_Trigger_Exec) --Manage recursivity
+  --  RETURN
 		
   DECLARE CC_crs_$TableName$ CURSOR LOCAL STATIC FORWARD_ONLY FOR
   SELECT 
-  'acolvalue' As TrgCol
-  FROM $TriggerType$ed WITH(READUNCOMMITTED)
-  WHERE 1 = 1
+	'acolvalue' AS TrgCol
+  FROM
+	$TriggerType$ed
+  WHERE 
+	1 = 1
   OPEN CC_crs_$TableName$
   WHILE 1 = 1
   BEGIN
 	  FETCH NEXT FROM CC_crs_$TableName$ INTO
-	  @TrgCol
-	  if @@FETCH_STATUS<>0 break
+		@TrgCol
+	  IF @@FETCH_STATUS<>0
+		BREAK
 	  
 	  --DoStuff
   END
   CLOSE CC_crs_$TableName$ DEALLOCATE CC_crs_$TableName$
     
-end]]>  
+END]]>  
 </Code>  
 </Snippet>  
 </CodeSnippet>  

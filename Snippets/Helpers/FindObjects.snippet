@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>FindObjects</Title>
+			<Shortcut>FOBC</Shortcut>
+			<Description>Find objects by scanning code</Description>
+			<Author>Micael Uthas(uthas.com)</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+/*
+	Enter the text to find in @SearchString1.
+	if you want to combine two texts add the second text in @SearchString2.
+
+	Enter excluded object names as a commaseparated list in @ExcludeObjectNames
+	Enter the RIGHT part of object names that should be excluded in @ExcludeNameContaining
+	If you want both serachstrings to applied (AND) set @HardCompareOnBothStrings = 1 else DEFAULT or set it to 0 (OR)
+
+	Finds:
+	Objects with the searched text in it´s code.
+
+	Returns:
+		Object Type
+		Object Name
+		Object Id
+		Object Creation date
+		Object Modification date
+		100 chars from hit on SearchString1(compressed)
+		100 chars from hit on SearchString2(compressed)
+
+	Author:Micael Uthas (uthas.com)
+*/
+DECLARE
+@SearchString1 NVARCHAR(255) = ''
+, @SearchString2 NVARCHAR(255) = ''
+, @ExcludeObjectNames NVARCHAR(max) = ''
+, @ExcludeNameContaining NVARCHAR(1024) = ''
+, @HardCompareOnBothStrings BIT = 0
+
+IF @SearchString1 IS NULL SET @SearchString1 = CONVERT(VARCHAR(38), NEWID())
+
+DECLARE
+	@SqlStmnt NVARCHAR(max)
+	, @Parameters NVARCHAR(255) = '@SearchString1 NVARCHAR(255)
+	, @SearchString2 NVARCHAR(255)
+	, @ExcludeObjectNames NVARCHAR(max)
+	, @ExcludeNameContaining NVARCHAR(1024)'
+	, @dfn CHAR(2) =  CHAR(39) + CHAR(39)
+	, @DefinitionReplaceStatement nVarchar(1024)
+	
+	SET @DefinitionReplaceStatement = 'REPLACE(REPLACE(REPLACE(REPLACE(m.definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ')'
+
+SET @SqlStmnt = '
+SELECT
+	[type]
+	, [name]
+	, [object_id]
+	, [create_date]
+	, [modify_date]
+	, IIF(HitPosOnSearchString1 > 0, FIRSTHIT_SearchString1, NULL)
+	, IIF(HitPosOnSearchString2 > 0, FIRSTHIT_SearchString2, NULL)
+FROM(
+	SELECT
+	o.type
+	, o.name
+	, o.object_id
+	, o.create_date
+	, o.modify_date
+	, SUBSTRING(
+			' + @DefinitionReplaceStatement + '
+			, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ')
+			, 100
+		) AS FIRSTHIT_SearchString1
+	, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ') AS HitPosOnSearchString1'
+
+IF(NULLIF(@SearchString2, '') IS NOT NULL)
+	SET @SqlStmnt = @SqlStmnt + '
+	, SUBSTRING(
+			' + @DefinitionReplaceStatement + '
+			, CHARINDEX(@SearchString2, ' + @DefinitionReplaceStatement + ')
+			, 100
+		) AS FIRSTHIT_SearchString2
+	, CHARINDEX(@SearchString2, ' + @DefinitionReplaceStatement + ') AS HitPosOnSearchString2'
+
+SET @SqlStmnt = @SqlStmnt + '
+FROM
+	sys.sql_modules m
+INNER JOIN
+	sys.objects o
+		ON o.object_id = m.object_id 
+WHERE
+	' + @DefinitionReplaceStatement + ' LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @SearchString1 + ' + CHAR(39) + '%'  + CHAR(39)
+
+IF(NULLIF(@SearchString2, '') IS NOT NULL)
+	SET @SqlStmnt = @SqlStmnt
+	+ CHAR(10) + '	' + IIF(@HardCompareOnBothStrings = 1, 'AND', 'OR') + ' ' + @DefinitionReplaceStatement + ' LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @SearchString2 + ' + CHAR(39) + '%'  + CHAR(39)
+
+IF(ISNULL(@ExcludeObjectNames, '') != '')
+	SET @SqlStmnt = @SqlStmnt
+	+ CHAR(10) + '	AND NOT EXISTS(SELECT 1 FROM string_split(@ExcludeObjectNames, '','') WHERE [Value] = o.name)'
+
+IF(ISNULL(@ExcludeNameContaining, '') != '')
+	SET @SqlStmnt = @SqlStmnt
+	+ CHAR(10) + '	AND RIGHT(o.Name, CONVERT(VARCHAR, LEN(@ExcludeNameContaining))) != @ExcludeNameContaining'
+
+SET @SqlStmnt = @SqlStmnt
++ CHAR(10) + '
+) s
+ORDER BY
+	s.name'
+
+EXEC Sp_ExecuteSql
+	@SqlStmnt
+	, @Parameters
+	, @SearchString1
+	, @SearchString2
+	, @ExcludeObjectNames
+	, @ExcludeNameContaining
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

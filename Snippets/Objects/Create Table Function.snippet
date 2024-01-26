@@ -87,11 +87,21 @@ CREATE OR ALTER FUNCTION [dbo].[$UDEFName$]
 (
   @SomeId BIGINT
 )
-RETURNS @ValueTable TABLE ([Value] NVARCHAR(Max))
+RETURNS
+    @ValueTable TABLE
+	(
+	    [Value] NVARCHAR(MAX)
+	)
 BEGIN
 
     INSERT INTO @ValueTable
-	VALUES('DATA')
+	(
+	    [Value]
+	)
+	VALUES
+	(
+	    'DATA'
+	)
   
     RETURN
 END

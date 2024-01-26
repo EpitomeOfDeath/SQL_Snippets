@@ -64,7 +64,7 @@
     <Folder Include="Snippets\Helpers" />
     <Folder Include="Snippets\Optimize" />
     <Folder Include="Snippets\Dba" />
-    <Folder Include="DataTypeHndl" />
+    <Folder Include="CodeParts" />
   </ItemGroup>
   <ItemGroup>
     <None Include="_Add and use Snippets in SQL Server Management Studio.docx" />
@@ -88,7 +88,7 @@
     <None Include="Snippets\Security\GrantUDEF.snippet" />
     <None Include="Snippets\Security\GrantView.snippet" />
     <None Include="Snippets\ScriptParts\PrimaryKeyWhile.snippet" />
-    <None Include="Snippets\Helpers\GOD.snippet" />
+    <None Include="Snippets\Helpers\FindObjects.snippet" />
     <None Include="Snippets\Helpers\GetColsFrTableCreate.snippet" />
     <None Include="Snippets\Objects\Create Table Inline Function.snippet" />
     <None Include="Snippets\Other\Header.snippet" />
@@ -114,7 +114,8 @@
     <None Include="Snippets\Dba\SpsWithInvalidReferences.snippet" />
     <None Include="Snippets\Helpers\GetCreateIndexOnFkColums.snippet" />
     <None Include="Snippets\Helpers\GetColsFrTable.snippet" />
-    <None Include="DataTypeHndl\SP_Datatype.sql" />
-    <None Include="DataTypeHndl\Tbl_DataType.sql" />
+    <None Include="CodeParts\SP_Datatype.sql" />
+    <None Include="CodeParts\Tbl_DataType.sql" />
+    <None Include="CodeParts\Header.sql" />
   </ItemGroup>
 </Project>

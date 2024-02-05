@@ -35,12 +35,12 @@
   <![CDATA[
 if not exists (Select 1 from sys.objects where name='$Tablename$' and type='U')
     CREATE TABLE [dbo].[$Tablename$](
-	    [Id] [bigint] IDENTITY(1,1) NOT NULL,
-	    [Created] [datetime2](0) NOT NULL,
-	    [CreatedBy] [NVARCHAR](255) NULL,
-	    [Updated] [datetime2](0) NULL,
-	    [UpdatedBy] [NVARCHAR](255) NULL,
-	    [ProjectId] [bigint] NOT NULL,
+	    [Id] [bigint] IDENTITY(1,1) NOT NULL
+	    , [Created] [datetime2](0) NOT NULL
+	    , [CreatedBy] [NVARCHAR](255) NULL
+	    , [Updated] [datetime2](0) NULL
+	    , [UpdatedBy] [NVARCHAR](255) NULL
+	    , [ProjectId] [bigint] NOT NULL
         --, [$RefTablename$Id]  BIGINT NOT NULL
     , CONSTRAINT [PK_$Tablename$] PRIMARY KEY CLUSTERED 
     (

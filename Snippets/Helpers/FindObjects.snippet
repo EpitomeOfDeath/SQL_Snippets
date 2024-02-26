@@ -70,8 +70,9 @@ SELECT
 	, [object_id]
 	, [create_date]
 	, [modify_date]
-	, IIF(HitPosOnSearchString1 > 0, FIRSTHIT_SearchString1, NULL)
-	, IIF(HitPosOnSearchString2 > 0, FIRSTHIT_SearchString2, NULL)
+	, IIF(HitPosOnSearchString1 > 0, FIRSTHIT_SearchString1, NULL) AS FirstHitCodePart1'
+	+ IIF(ISNULl(@SearchString2, '') != '', '
+	, IIF(HitPosOnSearchString2 > 0, FIRSTHIT_SearchString2, NULL)  AS FirstHitCodePart2', '') + '
 FROM(
 	SELECT
 	o.type

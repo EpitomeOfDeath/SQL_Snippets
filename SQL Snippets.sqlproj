@@ -119,5 +119,6 @@
     <None Include="CodeParts\SP_Datatype.sql" />
     <None Include="CodeParts\Tbl_DataType.sql" />
     <None Include="CodeParts\Header.sql" />
+    <None Include="Snippets\Dba\CreateUser.snippet" />
   </ItemGroup>
 </Project>

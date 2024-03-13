@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Create Login and user</Title>
+			<Shortcut>clau</Shortcut>
+			<Description>Creates a login and a user</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+--In Master
+CREATE LOGIN [SOMELOGIN] WITH password='SOMEPWD';
+-- grant public master access
+CREATE USER [SOMEUSER] FROM LOGIN [SOMELOGIN]
+
+--In UserDb
+CREATE USER [SOMEUSER] FROM LOGIN [SOMELOGIN] WITH DEFAULT_SCHEMA = dbo;
+
+ALTER ROLE db_owner ADD MEMBER [SOMEUSER];
+
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

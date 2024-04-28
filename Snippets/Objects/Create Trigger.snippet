@@ -37,12 +37,13 @@
   </Literal>
 </Declarations>  
 <Code Language="SQL">
-  <![CDATA[SET ANSI_NULLS ON
+  <![CDATA[
+SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 /*
-EXEC $ProcedureName$
+EXEC 
 	@ProjectId = NULL
 	, @ItemTypeId  = NULL
 ------------------------------------------------------------------------------------------------------
@@ -55,43 +56,39 @@ Who     When        What
 */
 CREATE OR ALTER trigger $TableName$_$TriggerType$
 	ON $TableName$ 
-	FOR $TriggerType$
+FOR $TriggerType$
 AS
 BEGIN
-  DECLARE
-	@ErrMsg               NVARCHAR(max)
-    , @Message            NVARCHAR(max)
-    , @Enter_Trancount    INT
-    , @NestLevel          VARCHAR(10)
-		  					
-  SELECT
-	@Enter_Trancount = @@TRANCOUNT
-	, @ErrMsg = ''
-	, @Nestlevel = CONVERT(VARCHAR(10), @@nestlevel)
+	DECLARE
+		@ErrMsg               NVARCHAR(max) = ''
+		, @Message            NVARCHAR(max)
+		, @Enter_Trancount    INT = @@TRANCOUNT
+		, @NestLevel          VARCHAR(10) = CONVERT(VARCHAR(10), @@nestlevel)
 
-  --IF UPDATE(No_Trigger_Exec) --Manage recursivity
-  --  RETURN
+	--IF UPDATE(No_Trigger_Exec) --Manage recursivity
+	--  RETURN
 		
-  DECLARE CC_crs_$TableName$ CURSOR LOCAL STATIC FORWARD_ONLY FOR
-  SELECT 
-	'acolvalue' AS TrgCol
-  FROM
-	$TriggerType$ed
-  WHERE 
-	1 = 1
-  OPEN CC_crs_$TableName$
-  WHILE 1 = 1
-  BEGIN
-	  FETCH NEXT FROM CC_crs_$TableName$ INTO
-		@TrgCol
-	  IF @@FETCH_STATUS<>0
+	DECLARE CC_crs_$TableName$_$TriggerType$ CURSOR LOCAL STATIC FORWARD_ONLY FOR
+	SELECT 
+		'acolvalue' AS TrgCol
+	FROM
+		$TriggerType$ed
+	WHERE 
+		1 = 1
+	OPEN CC_crs_$TableName$_$TriggerType$
+	WHILE 1 = 1
+	BEGIN
+		FETCH NEXT FROM CC_crs_$TableName$_$TriggerType$ INTO
+			@TrgCol
+		IF @@FETCH_STATUS<>0
 		BREAK
 	  
-	  --DoStuff
-  END
-  CLOSE CC_crs_$TableName$ DEALLOCATE CC_crs_$TableName$
+		--DoStuff
+	END
+	CLOSE CC_crs_$TableName$_$TriggerType$ DEALLOCATE CC_crs_$TableName$_$TriggerType$
     
-END]]>  
+END  
+]]>  
 </Code>  
 </Snippet>  
 </CodeSnippet>  

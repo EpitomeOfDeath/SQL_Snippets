@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Fast Table Row Count</Title>
+			<Shortcut>ftrc</Shortcut>
+			<Description>Fast table Row Count</Description>
+			<Author>Micael Uthas</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal>
+					<ID>TableName</ID>
+					<ToolTip>The table to count rows on</ToolTip>
+					<Default>aTable</Default>
+				</Literal>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+SELECT
+   Total_Rows= SUM(st.row_count)
+FROM
+   sys.dm_db_partition_stats st
+WHERE
+    object_name(object_id) = '$TableName$'
+	AND (index_id < 2)
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

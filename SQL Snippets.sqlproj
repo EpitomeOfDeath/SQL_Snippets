@@ -120,5 +120,8 @@
     <None Include="CodeParts\Tbl_DataType.sql" />
     <None Include="CodeParts\Header.sql" />
     <None Include="Snippets\Dba\CreateUser.snippet" />
+    <None Include="Snippets\ScriptParts\FastTableRowCount.snippet" />
+    <None Include="Snippets\Optimize\IndexUsedIn.snippet" />
+    <None Include="_Add and use Snippets in SQL Server Management Studio.pdf" />
   </ItemGroup>
 </Project>

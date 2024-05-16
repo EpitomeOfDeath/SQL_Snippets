@@ -24,6 +24,7 @@
 			<Code Language="SQL">
 				<![CDATA[
 
+
 /*
 All zero values mean that the table is not used, or the SQL Server service restarted recently.
 An index with zero or small number of seeks, scans or lookups and large number of updates is a useless index and should be removed, after verifying with the system owner, as the main purpose of adding the index is speeding up the read operations.
@@ -37,9 +38,11 @@ Large scans are OK in small tables.
 */
 Declare
 @TableName sysname = '' --Enter a specific tabel to investigate
-, @TableAlias Varchar(255) = ''--Enter a table alias for the columns
+, @TableAlias Varchar(255) = NULL--Enter a table alias for the columns
 , @IndexName sysname = NULL --Enter a specific index to investigate
 , @IndexUsageDropThreshold Int = 100 --Enter a value (Sum of SEEK, SCAN, LOOCKUP) for when a DROP INDEX statement shuold be created
+
+IF @TableAlias  = '' SET @TableAlias = NULL
 
 ;WITH CTE_IndexInfo
 AS
@@ -140,7 +143,7 @@ AS
 	SELECT 
 		o.object_id AS ObjectId
 		, ix.index_id AS IndexId
-		, STRING_AGG((ISNULL(@TableAlias + '.', '') + Quotename(ck.Name) + IIF(ic.is_descending_key = 1, ' DESC', '')) , ', ') AS Cols 
+		, STRING_AGG((ISNULL(@TableAlias + '.' + Quotename(ck.Name),  Quotename(ck.Name)) + IIF(ic.is_descending_key = 1, ' DESC', '')) , ', ') AS Cols 
 	FROM 
 		sys.index_columns ic
 		INNER JOIN sys.indexes ix
@@ -163,7 +166,7 @@ AS
 	SELECT 
 		o.object_id AS ObjectId
 		, ix.index_id AS IndexId
-		, STRING_AGG((ISNULL(@TableAlias + '.', '') + Quotename(ck.Name) + IIF(ic.is_descending_key = 1, ' DESC', '')) , ', ') AS Cols 
+		, STRING_AGG((ISNULL(@TableAlias + '.' + Quotename(ck.Name),  Quotename(ck.Name)) + IIF(ic.is_descending_key = 1, ' DESC', '')) , ', ') AS Cols 
 	FROM 
 		sys.index_columns ic
 		INNER JOIN sys.indexes ix
@@ -216,6 +219,8 @@ LEFT JOIN CTE_IncCols ci
 ORDER BY
 	Inf.IndexSizeKB DESC
 	, NumOfSeeks + NumOfScans + NumOfLookups + inf.NumOfUpdates ASC
+
+
 
 ]]>
 			</Code>

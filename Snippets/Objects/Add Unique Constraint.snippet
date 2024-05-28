@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Add Unique Constraint</Title>
+			<Shortcut>auc</Shortcut>
+			<Description>Adds a unique constraint to a table if possible.</Description>
+			<Author>Micael Uthas (uthas.com)</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+
+SET NOCOUNT ON
+
+DECLARE
+	@TableName SYSNAME = '' /*Enter a tablename*/
+	, @UniqueColumns NVARCHAR(1000) = '' /*Enter the column names that should be unique separated by a comma.*/
+	, @ConstraintName SYSNAME = ''/*Enter a name for the constraint, if omitted the constraint name will be generated using, Table name and Column names.*/
+
+	, @HasDuplicates SMALLINT = 0
+	, @ConstraintExists SMALLINT = 0
+	, @TableExists SMALLINT = 0
+	, @ColumnsExists SMALLINT = 0
+	, @SqlStatement NVARCHAR(max)
+	, @AddConstraintNow BIT = 0 /*If True the constraint will be added else the constraint SQL statement will be printed.*/
+	
+DECLARE
+	@Columns TABLE
+	(
+		COLUMN_NAME SYSNAME
+	)
+
+INSERT INTO
+	@Columns
+SELECT
+	[Value]
+FROM
+	string_split(REPLACE(@UniqueColumns, CHAR(32), '')	, ',')
+
+IF(SELECT COUNT(1) FROM @Columns) = 0
+BEGIN
+	RAISERROR('No columns in @UniqueColumns!', 16, 1)
+	RETURN
+END
+
+IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = @TableName)
+	SET @TableExists = 1
+
+IF(@TableExists = 1)
+BEGIN
+	IF(NULLIF(@ConstraintName, '') IS NULL)
+		SET @ConstraintName = QUOTENAME('UC_' + @TableName + '_' + (SELECT STRING_AGG(COLUMN_NAME, '_') FROM @Columns))
+
+	IF EXISTS(SELECT 1 from INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE WHERE CONSTRAINT_NAME = @ConstraintName)
+		SET @ConstraintExists = 1
+
+	IF(@ConstraintExists = 1)
+	BEGIN
+		RAISERROR('Constraint already exists!', 16, 1)
+		RETURN
+	END ELSE
+	BEGIN
+		SET @SqlStatement = 'IF EXISTS(
+			SELECT 1
+			FROM
+			(
+				SELECT
+				' + (SELECT STRING_AGG(QUOTENAME(COLUMN_NAME), ',') FROM @Columns) + ', COUNT(1) AS cnt
+				FROM ' + QUOTENAME(@TableName)
+		+ '
+				GROUP BY
+					' + (SELECT STRING_AGG(QUOTENAME(COLUMN_NAME), ',') FROM @Columns)
+		+ '
+				HAVING
+					COUNT(1) > 1
+			) c
+		)
+			SET @HasDuplicates = 1
+		ELSE
+			SET @HasDuplicates = 0'
+
+		EXEC sp_executesql
+			@SqlStatement
+			, N'@HasDuplicates SMALLINT OUT'
+			, @HasDuplicates = @HasDuplicates
+
+		IF(@HasDuplicates = 1)
+		BEGIN
+			RAISERROR('Duplicates on constraint columns!', 16, 1)
+			RETURN
+		END ELSE
+		BEGIN
+			SET @SqlStatement = 'ALTER TABLE ' + @TableName
+			+ ' ADD CONSTRAINT ' + QUOTENAME(@ConstraintName) + ' UNIQUE (' + (SELECT STRING_AGG(QUOTENAME(COLUMN_NAME), ',') FROM @Columns) + ')'
+
+			IF(@AddConstraintNow = 1)
+			BEGIN
+				EXEC sp_executesql
+					@SqlStatement
+			END
+		END
+	END
+END
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

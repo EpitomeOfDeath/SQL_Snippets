@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Find index usage</Title>
+			<Shortcut>fiu</Shortcut>
+			<Description>Find stored procedure where a index is used</Description>
+			<Author>Micael Uthas (uthas.com)</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+
+/*
+	Script to investigate the usage of an index.
+
+	1. Run Indexanalysis for a table(Snippet)
+	2. Modify the query to fill @objectstocheck to use the table you want to investigate
+	3. Enter the index to find usage for.
+	4. Modify the query and drop the plan/plans when the wuery uses another index
+	5. Repete from 3 until no records then drop the index
+
+	EXEC sp_query_store_remove_plan 666
+*/
+Declare
+	@IndexName SYSNAME = 'ItemEvent_Type_WarehouseId_Status'
+
+Declare
+	@objectstocheck TABLE
+	(Object_id INT, [Name] SYSNAME, ExecutionCount bigint, Last_Execution_Time DATETIME)
+
+INSERT INTO @objectstocheck
+SELECT DISTINCT
+	m.OBJECT_ID, OBJECT_NAME(m.object_id), s.execution_count, s.Last_Execution_Time
+FROM sys.sql_modules m
+INNER JOIN sys.dm_exec_procedure_stats s on s.object_id = m.object_id
+WHERE definition like '%ItemLastItemEventStatusView%'
+
+INSERT INTO @objectstocheck
+SELECT DISTINCT
+	m.OBJECT_ID, OBJECT_NAME(m.object_id), s.execution_count, s.Last_Execution_Time
+FROM sys.sql_modules m
+INNER JOIN sys.dm_exec_procedure_stats s on s.object_id = m.object_id
+WHERE definition like '%ItemEvent%'
+AND NOT EXISTS(
+	SELECT 1 FROM @objectstocheck oc Where oc.object_id = m.object_id
+)
+
+DROP TABLE IF EXISTS #Qpl
+SELECT top 1000
+	qsc.[Name]
+    , qsq.query_hash
+    , qsqt.query_sql_text AS sqltext    
+    , qsp.query_plan
+    , qsq.query_id
+	, qsp.plan_id
+INTO #Qpl
+FROM sys.query_store_query qsq
+JOIN @objectstocheck qsc on qsc.Object_id = qsq.object_id
+JOIN sys.query_store_plan qsp on qsq.query_id=qsp.query_id
+JOIN sys.query_store_query_text qsqt on qsqt.query_text_id = qsq.query_text_id
+--JOIN sys.query_store_runtime_stats qrs on qsp.plan_id = qrs.plan_id
+--JOIN sys.query_store_runtime_stats_interval qsrsi on qrs.runtime_stats_interval_id=qsrsi.runtime_stats_interval_id
+OPTION (RECOMPILE);
+
+
+SELECT
+	[Name]
+    , query_hash
+    , sqltext    
+    , query_plan
+    , MAX(query_id) AS query_id
+	, MAX(qsp.plan_id) AS plan_id
+
+from #Qpl qsp
+JOIN sys.query_store_runtime_stats qrs on qsp.plan_id = qrs.plan_id
+JOIN sys.query_store_runtime_stats_interval qsrsi on qrs.runtime_stats_interval_id=qsrsi.runtime_stats_interval_id
+
+--WHERE query_plan like N'%' + @IndexName + '%'
+
+GROUP BY
+	[Name]
+    , query_hash
+    , sqltext    
+    , query_plan
+
+
+GO
+
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

@@ -21,6 +21,7 @@
 		<Snippet>
 			<Code Language="SQL">
 				<![CDATA[
+
 /*
 	Enter the text to find in @SearchString1.
 	if you want to combine two texts add the second text in @SearchString2.
@@ -63,6 +64,18 @@ DECLARE
 	
 	SET @DefinitionReplaceStatement = 'REPLACE(REPLACE(REPLACE(REPLACE(m.definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ')'
 
+DROP TABLE IF EXISTS #Res
+CREATE TABLE #Res
+(
+	[Type] NVARCHAR(10)
+	, [Name] SYSNAME
+	, [object_id] INT
+	, create_date DATETIME
+	, modify_date DATETIME
+	, last_execution_time DATETIME
+	, FirstHitCodePart1 NVARCHAR(100)
+	, FirstHitCodePart2 NVARCHAR(100)
+)
 SET @SqlStmnt = '
 SELECT
 	[type]
@@ -70,8 +83,9 @@ SELECT
 	, [object_id]
 	, [create_date]
 	, [modify_date]
+	, [last_execution_time]
 	, IIF(HitPosOnSearchString1 > 0, FIRSTHIT_SearchString1, NULL) AS FirstHitCodePart1'
-	+ IIF(ISNULl(@SearchString2, '') != '', '
+	+ IIF(ISNULL(@SearchString2, '') != '', '
 	, IIF(HitPosOnSearchString2 > 0, FIRSTHIT_SearchString2, NULL)  AS FirstHitCodePart2', '') + '
 FROM(
 	SELECT
@@ -80,6 +94,7 @@ FROM(
 	, o.object_id
 	, o.create_date
 	, o.modify_date
+	, COALESCE(ps.last_execution_time, fns.last_execution_time) AS last_execution_time
 	, SUBSTRING(
 			' + @DefinitionReplaceStatement + '
 			, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ')
@@ -101,7 +116,13 @@ FROM
 	sys.sql_modules m
 INNER JOIN
 	sys.objects o
-		ON o.object_id = m.object_id 
+		ON o.object_id = m.object_id
+LEFT JOIN
+	sys.dm_exec_procedure_stats ps
+		ON ps.object_id = o.object_id
+LEFT JOIN
+	sys.dm_exec_function_stats fns
+		ON fns.Object_Id = o.Object_Id
 WHERE
 	' + @DefinitionReplaceStatement + ' LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @SearchString1 + ' + CHAR(39) + '%'  + CHAR(39)
 
@@ -123,13 +144,46 @@ SET @SqlStmnt = @SqlStmnt
 ORDER BY
 	s.name'
 
-EXEC Sp_ExecuteSql
-	@SqlStmnt
-	, @Parameters
-	, @SearchString1
-	, @SearchString2
-	, @ExcludeObjectNames
-	, @ExcludeNameContaining
+IF ISNULL(@SearchString2, '') != ''
+	INSERT INTO #Res
+	(
+		[Type]
+		, [Name]
+		, [object_id]
+		, create_date
+		, modify_date
+		, last_execution_time
+		, FirstHitCodePart1
+		, FirstHitCodePart2
+	)
+	EXEC Sp_ExecuteSql
+		@SqlStmnt
+		, @Parameters
+		, @SearchString1
+		, @SearchString2
+		, @ExcludeObjectNames
+		, @ExcludeNameContaining
+ELSE
+	INSERT INTO #Res
+	(
+		[Type]
+		, [Name]
+		, [object_id]
+		, create_date
+		, modify_date
+		, last_execution_time
+		, FirstHitCodePart1
+	)
+	EXEC Sp_ExecuteSql
+		@SqlStmnt
+		, @Parameters
+		, @SearchString1
+		, @SearchString2
+		, @ExcludeObjectNames
+		, @ExcludeNameContaining
+
+SELECT * from #Res
+
 ]]>
 			</Code>
 		</Snippet>

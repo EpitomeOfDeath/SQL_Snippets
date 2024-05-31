@@ -22,6 +22,8 @@
 			<Code Language="SQL">
 				<![CDATA[
 
+
+
 /*
 	Enter the text to find in @SearchString1.
 	if you want to combine two texts add the second text in @SearchString2.
@@ -45,9 +47,9 @@
 	Author:Micael Uthas (uthas.com)
 */
 DECLARE
-@SearchString1 NVARCHAR(255) = ''
+@SearchString1 NVARCHAR(255) = '[Type] IN(1, 2)'
 , @SearchString2 NVARCHAR(255) = ''
-, @ExcludeObjectNames NVARCHAR(max) = ''
+, @ExcludeObjectNames NVARCHAR(MAX) = ''
 , @ExcludeNameContaining NVARCHAR(1024) = ''
 , @HardCompareOnBothStrings BIT = 0
 
@@ -62,7 +64,9 @@ DECLARE
 	, @dfn CHAR(2) =  CHAR(39) + CHAR(39)
 	, @DefinitionReplaceStatement nVarchar(1024)
 	
-	SET @DefinitionReplaceStatement = 'REPLACE(REPLACE(REPLACE(REPLACE(m.definition, CHAR(10), ' + @dfn + '), CHAR(13), ' + @dfn + '), CHAR(9), ' + @dfn + '), CHAR(32), ' + @dfn + ')'
+	SET @DefinitionReplaceStatement = 'REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(m.definition, CHAR(10), ''''), CHAR(13), ''''), CHAR(9), ''''), CHAR(32), ''''), ''['', ''''), '']'', '''')'
+	SET @SearchString1 = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@SearchString1, CHAR(10), ''), CHAR(13), ''), CHAR(9), ''), CHAR(32), ''), '[', ''), ']', '')
+	SET @SearchString2 = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@SearchString1, CHAR(10), ''), CHAR(13), ''), CHAR(9), ''), CHAR(32), ''), '[', ''), ']', '')
 
 DROP TABLE IF EXISTS #Res
 CREATE TABLE #Res
@@ -144,6 +148,7 @@ SET @SqlStmnt = @SqlStmnt
 ORDER BY
 	s.name'
 
+	print @SqlStmnt
 IF ISNULL(@SearchString2, '') != ''
 	INSERT INTO #Res
 	(
@@ -183,7 +188,6 @@ ELSE
 		, @ExcludeNameContaining
 
 SELECT * from #Res
-
 ]]>
 			</Code>
 		</Snippet>

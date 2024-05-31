@@ -125,5 +125,6 @@
     <None Include="Snippets\Optimize\Missing Indexes.snippet" />
     <None Include="Snippets\Objects\Add Unique Constraint.snippet" />
     <None Include="Snippets\Optimize\FindIndexUsage.snippet" />
+    <None Include="Snippets\Optimize\Clear plans.snippet" />
   </ItemGroup>
 </Project>

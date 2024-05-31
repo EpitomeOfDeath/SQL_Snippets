@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Clear stored plans</Title>
+			<Shortcut>clsp</Shortcut>
+			<Description>Cleares QueryStore and PlanCache</Description>
+			<Author>Micael Uthas (uthas.com)</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="SQL">
+				<![CDATA[
+ALTER DATABASE [SomeDataBaseName] SET QUERY_STORE CLEAR;
+DBCC FREEPROCCACHE;
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

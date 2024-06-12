@@ -111,7 +111,7 @@
     <None Include="Snippets\Optimize\Expensive Queries.snippet" />
     <None Include="Snippets\Optimize\IndexAnalyse.snippet" />
     <None Include="Snippets\Optimize\IndexDuplicates.snippet" />
-    <None Include="Snippets\Optimize\IndexFragmentation.snippet" />
+    <None Include="Snippets\Optimize\IndexFillFactorAndFragmentation.snippet" />
     <None Include="Snippets\Dba\IndexRebuild.snippet" />
     <None Include="Snippets\Dba\SpsWithInvalidReferences.snippet" />
     <None Include="Snippets\Helpers\GetCreateIndexOnFkColums.snippet" />

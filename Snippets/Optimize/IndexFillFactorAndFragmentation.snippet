@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Index Fragmentation</Title>
+			<Shortcut>ixfrag</Shortcut>
+			<Description>List indexes with high fragmentation rate.</Description>
+			<Author>Micael Uthas (uthas.com)</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+/*
+Normaly check for low fillfactor to ensure that the cache has as much data as possible on the pages.
+SSD and FLASH are fast as f and fragmentation is not a big issue.
+
+Eric Darling on this issue:
+https://erikdarling.com/a-little-about-fill-factor-and-fragmentation-in-sql-server/?utm_source=SQL+Server+Consulting&utm_campaign=9ca039f779-RSS_EMAIL_CAMPAIGN&utm_medium=email&utm_term=0_a97d90960b-9ca039f779-471362149&mc_cid=9ca039f779&mc_eid=906dfc8238
+*/
+DECLARE
+	@TableName SYSNAME = ''
+
+SELECT
+    schema_name = s.name,
+    table_name = t.name,
+    index_name = i.name,
+    ps.avg_fragmentation_in_percent,
+    ps.avg_page_space_used_in_percent,
+    ps.page_count,
+    ps.index_depth,
+    ps.index_level,
+    ps.alloc_unit_type_desc
+FROM sys.schemas AS s
+JOIN sys.tables AS t
+    ON s.schema_id = t.schema_id
+JOIN sys.indexes AS i
+    ON t.object_id = i.object_id
+CROSS APPLY sys.dm_db_index_physical_stats
+(
+    DB_ID(),
+    t.object_id,
+    i.index_id,
+    NULL,
+    N'DETAILED'
+) AS ps
+WHERE s.name = N'dbo'
+AND t.name = @TableName
+AND ps.index_level = 0
+ORDER BY
+    ps.index_id;]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

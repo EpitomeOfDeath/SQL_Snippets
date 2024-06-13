@@ -25,6 +25,7 @@
 				<![CDATA[
 
 
+
 /*
 All zero values mean that the table is not used, or the SQL Server service restarted recently.
 An index with zero or small number of seeks, scans or lookups and large number of updates is a useless index and should be removed, after verifying with the system owner, as the main purpose of adding the index is speeding up the read operations.
@@ -44,101 +45,147 @@ Declare
 
 IF @TableAlias  = '' SET @TableAlias = NULL
 
-;WITH CTE_IndexInfo
-AS
+DROP TABLE IF EXISTS #IxInfo
+CREATE TABLE #IxInfo
+(
+	TABLE_NAME SYSNAME
+	, INDEX_NAME SYSNAME
+	, INDEX_TYPE SYSNAME
+	, INDEX_SIZE INT
+	, LastSeek DATETIME
+	, LastScan DATETIME
+	, LastLookup DATETIME
+	, LastUpdate DATETIME
+	, NumOfSeeks INT NULL DEFAULT(0)
+	, NumOfScans INT NULL DEFAULT(0)
+	, NumOfLookups INT NULL DEFAULT(0)
+	, NumOfInserts INT NULL DEFAULT(0)
+	, NumOfUpdates INT NULL DEFAULT(0)
+	, NumOfDeletes INT NULL DEFAULT(0)
+	, KeyCols NVARCHAR(MAX)
+	, IncludeCols NVARCHAR(MAX)
+	, TableId INT
+	, Index_Id INT
+	, SumQuery AS(NumOfSeeks + NumOfScans + NumOfLookups)
+	, SumIUD AS(NumOfInserts + NumOfUpdates + NumOfDeletes)
+
+)
+
+INSERT INTO #IxInfo
+(
+	TABLE_NAME
+	, INDEX_NAME
+	, INDEX_TYPE
+	, TableId
+	, Index_Id
+)
+SELECT
+	OBJECT_NAME(ix.Object_Id)
+	, ix.[name]
+	, ix.[type]
+	, ix.object_id
+	, ix.index_id
+FROM
+	sys.indexes ix
+WHERE
+	OBJECTPROPERTY(IX.OBJECT_ID,'IsUserTable') = 1
+	AND ix.index_id > 1
+	AND (@TableName IS NULL OR OBJECT_NAME(IX.OBJECT_ID) = @TableName)
+	AND (@IndexName IS NULL OR IX.name = @IndexName)
+
+UPDATE
+	#IxInfo
+SET
+	LastSeek = x.LastSeek
+	, LastScan = x.LastScan
+	, LastLookup = x.LastLookup
+	, LastUpdate = x.LastUpdate
+	, NumOfSeeks = x.NumOfSeeks
+	, NumOfScans = x.NumOfScans
+	, NumOfLookups = x.NumOfLookups
+FROM
+	#IxInfo ix
+INNER JOIN
 (
 	SELECT
-		OBJECT_NAME(x.ObjectId) Table_Name
-		, x.ObjectId
-		, x.Index_Name
-		, x.index_id As IndexId
-		, x.Index_Type
-		, s.IndexSizeKB
-		, x.LastSeek
-		, x.LastScan
-		, x.LastLookup
-		, x.LastUpdate
-		, x.NumOfSeeks
-		, x.NumOfScans
-		, x.NumOfLookups
-		, s.NumOfInserts
-		, s.NumOfupdates
-		, s.NumOfDeletes	
-		, x.NumOfSeeks + x.NumOfScans + x.NumOfLookups As SumQuery
-		, s.NumOfInserts + s.NumOfupdates + s.NumOfDeletes As SumIUD
+		IXUS.last_user_seek AS LastSeek
+		, IXUS.last_user_scan AS LastScan
+		, IXUS.last_user_lookup AS LastLookup
+		, IXUS.last_user_update AS LastUpdate
+		, IXUS.user_seeks AS NumOfSeeks
+		, IXUS.user_scans AS NumOfScans
+		, IXUS.user_lookups AS NumOfLookups
+		, ix.index_id
 	FROM
-	(
-		SELECT
-			IX.OBJECT_ID As ObjectId
-			, IX.name AS Index_Name
-			, IX.type_desc Index_Type
-			, IXUS.last_user_seek AS LastSeek
-			, IXUS.last_user_scan AS LastScan
-			, IXUS.last_user_lookup AS LastLookup
-			, IXUS.last_user_update AS LastUpdate
-			, IXUS.user_seeks AS NumOfSeeks
-			, IXUS.user_scans AS NumOfScans
-			, IXUS.user_lookups AS NumOfLookups
-			, ix.index_id
-		FROM
-			sys.indexes IX
-		INNER JOIN sys.dm_db_index_usage_stats IXUS
-			ON IXUS.index_id = IX.index_id 
-			AND IXUS.OBJECT_ID = IX.OBJECT_ID
-		INNER JOIN sys.dm_db_partition_stats PS
-			ON PS.object_id=IX.object_id
-		INNER JOIN sys.objects O
-			ON O.object_id = IX.object_id
-		WHERE
-			OBJECTPROPERTY(IX.OBJECT_ID,'IsUserTable') = 1
-			AND (@TableName IS NULL OR OBJECT_NAME(IX.OBJECT_ID) = @TableName)
-			AND (@IndexName IS NULL OR IX.name = @IndexName)
-			AND IX.is_primary_key = 0
-		GROUP BY
-			IX.OBJECT_ID
-			, IX.name 
-			, IX.type_desc
-			, IXUS.user_seeks 
-			, IXUS.user_scans
-			, IXUS.user_lookups
-			, IXUS.user_updates
-			, IXUS.last_user_seek
-			, IXUS.last_user_scan
-			, IXUS.last_user_lookup
-			, IXUS.last_user_update
-			, ix.index_id
-		) x
-		LEFT JOIN
-		(
-			SELECT 
-				IX.name  Index_Name
-				, SUM(PS.[used_page_count]) * 8 IndexSizeKB
-				, IXOS.LEAF_INSERT_COUNT NumOfInserts
-				, IXOS.LEAF_UPDATE_COUNT NumOfupdates
-				, IXOS.LEAF_DELETE_COUNT NumOfDeletes
-	   
-			FROM
-				SYS.DM_DB_INDEX_OPERATIONAL_STATS (NULL,NULL,NULL,NULL ) IXOS 
-			INNER JOIN SYS.INDEXES AS IX
-				ON IX.OBJECT_ID = IXOS.OBJECT_ID 
-				AND IX.INDEX_ID =    IXOS.INDEX_ID 
-			INNER JOIN sys.dm_db_partition_stats PS 
-				ON PS.object_id=IX.object_id
-			WHERE
-				OBJECTPROPERTY(IX.[OBJECT_ID],'IsUserTable') = 1
-				AND (@TableName IS NULL OR OBJECT_NAME(IX.OBJECT_ID) = @TableName)
-			GROUP BY
-				IXOS.OBJECT_ID
-				, IX.name
-				, IX.type_desc
-				, IXOS.LEAF_INSERT_COUNT
-				, IXOS.LEAF_UPDATE_COUNT
-				, IXOS.LEAF_DELETE_COUNT
-	) s
-	ON s.Index_Name = x.Index_Name
-)
-, CTE_keyCols
-AS
+		sys.indexes IX
+	INNER JOIN sys.dm_db_index_usage_stats IXUS
+		ON IXUS.index_id = IX.index_id 
+		AND IXUS.OBJECT_ID = IX.OBJECT_ID
+	INNER JOIN sys.dm_db_partition_stats PS
+		ON PS.object_id=IX.object_id
+	INNER JOIN sys.objects O
+		ON O.object_id = IX.object_id
+	WHERE
+		OBJECTPROPERTY(IX.OBJECT_ID,'IsUserTable') = 1
+		AND (@TableName IS NULL OR OBJECT_NAME(IX.OBJECT_ID) = @TableName)
+		AND (@IndexName IS NULL OR IX.name = @IndexName)
+		AND IX.is_primary_key = 0
+	GROUP BY
+		IX.OBJECT_ID
+		, IX.name 
+		, IX.type_desc
+		, IXUS.user_seeks 
+		, IXUS.user_scans
+		, IXUS.user_lookups
+		, IXUS.user_updates
+		, IXUS.last_user_seek
+		, IXUS.last_user_scan
+		, IXUS.last_user_lookup
+		, IXUS.last_user_update
+		, ix.index_id
+) x
+	ON x.index_id = ix.index_id
+
+UPDATE
+	#IxInfo
+SET
+	INDEX_SIZE = x.IndexSizeKB
+	, NumOfInserts = x.NumOfInserts
+	, NumOfUpdates = x.NumOfupdates
+	, NumOfDeletes = x.NumOfDeletes
+FROM
+	#IxInfo ix
+INNER JOIN
+(
+	SELECT
+		IXOS.object_id
+		, IXOS.index_id
+		, SUM(PS.[used_page_count]) * 8 IndexSizeKB
+		, IXOS.LEAF_INSERT_COUNT NumOfInserts
+		, IXOS.LEAF_UPDATE_COUNT NumOfupdates
+		, IXOS.LEAF_DELETE_COUNT NumOfDeletes	   
+	FROM
+		SYS.DM_DB_INDEX_OPERATIONAL_STATS (NULL,NULL,NULL,NULL ) IXOS 
+	INNER JOIN sys.dm_db_partition_stats PS 
+		ON PS.object_id=IXOS.object_id
+	WHERE
+		OBJECTPROPERTY(IXOS.[OBJECT_ID],'IsUserTable') = 1
+		AND (@TableName IS NULL OR OBJECT_NAME(IXOS.OBJECT_ID) = @TableName)
+	GROUP BY
+		IXOS.object_id
+		, IXOS.index_id
+		, IXOS.LEAF_INSERT_COUNT
+		, IXOS.LEAF_UPDATE_COUNT
+		, IXOS.LEAF_DELETE_COUNT
+) x
+ON x.object_id = ix.TableId AND x.index_id = ix.index_id
+
+UPDATE
+	#IxInfo
+SET KeyCols = kc.Cols
+FROM
+	#IxInfo ix
+INNER JOIN
 (
 	SELECT 
 		o.object_id AS ObjectId
@@ -160,8 +207,16 @@ AS
 	GROUP BY
 		o.object_id
 		, ix.index_id
-), CTE_IncCols
-AS
+) kc
+	ON kc.ObjectId = ix.TableId
+	AND kc.IndexId = ix.Index_Id
+
+UPDATE
+	#IxInfo
+SET IncludeCols = Ic.Cols
+FROM
+	#IxInfo ix
+INNER JOIN
 (
 	SELECT 
 		o.object_id AS ObjectId
@@ -183,12 +238,15 @@ AS
 	GROUP BY
 		o.object_id
 		, ix.index_id
-)
+) Ic
+	ON Ic.ObjectId = ix.TableId
+	AND Ic.IndexId = ix.Index_Id
+
 Select
 	inf.Table_Name
 	, inf.Index_Name
 	, inf.Index_Type
-	, inf.IndexSizeKB
+	, inf.INDEX_SIZE As index_SizeKB
 
 	, inf.LastSeek
 	, inf.LastScan
@@ -202,27 +260,18 @@ Select
 	, inf.NumOfInserts
 	, inf.NumOfupdates
 	, inf.NumOfDeletes
-	, NumOfSeeks + NumOfScans + NumOfLookups As SumUsageInQuery
-	, ck.Cols As KeyCols
-	, ci.Cols AS IncludeCols
+	, KeyCols
+	, IncludeCols
 	, SumQuery
 	, SumIUD
 	, IIF(SumQuery <= @IndexUsageDropThreshold, 'DROP INDEX ' + QUOTENAME(inf.Table_Name) + '.' + QUOTENAME(inf.Index_Name), '') As DropIndex
 from
-	CTE_IndexInfo inf
-INNER JOIN CTE_keyCols ck
-	ON ck.ObjectId = inf.ObjectId
-	AND ck.IndexId = inf.IndexId
-LEFT JOIN CTE_IncCols ci
-	ON ci.ObjectId = inf.ObjectId 
-	AND ci.IndexId = inf.IndexId
+	#IxInfo inf
 ORDER BY
-	Inf.IndexSizeKB DESC
+	Inf.INDEX_SIZE DESC
 	, NumOfSeeks + NumOfScans + NumOfLookups + inf.NumOfUpdates ASC
-
-
-
-]]>
+				
+			]]>
 			</Code>
 		</Snippet>
 	</CodeSnippet>

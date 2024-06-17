@@ -20,20 +20,9 @@
 		</Header>
 		<Snippet>
 			<Code Language="SQL">
-				<![CDATA[
-
-
-
-/*
-	Enter the text to find in @SearchString1.
-	if you want to combine two texts add the second text in @SearchString2.
-
-	Enter excluded object names as a commaseparated list in @ExcludeObjectNames
-	Enter the RIGHT part of object names that should be excluded in @ExcludeNameContaining
-	If you want both serachstrings to applied (AND) set @HardCompareOnBothStrings = 1 else DEFAULT or set it to 0 (OR)
-
+				<![CDATA[/*
 	Finds:
-	Objects with the searched text in it´s code.
+	Objects(Stored Procedures, User Defined functions, Views, Triggers) with the searched text in it´s code.
 
 	Returns:
 		Object Type
@@ -41,17 +30,20 @@
 		Object Id
 		Object Creation date
 		Object Modification date
-		100 chars from hit on SearchString1(compressed)
-		100 chars from hit on SearchString2(compressed)
+		n chars from hit on SearchString1(compressed)
+		n chars from hit on SearchString2(compressed)
 
 	Author:Micael Uthas (uthas.com)
 */
 DECLARE
-@SearchString1 NVARCHAR(255) = ''
-, @SearchString2 NVARCHAR(255) = ''
-, @ExcludeObjectNames NVARCHAR(MAX) = ''
-, @ExcludeNameContaining NVARCHAR(1024) = ''
-, @HardCompareOnBothStrings BIT = 0
+@SearchString1 NVARCHAR(255) = ''				/*String to find*/
+, @SearchString2 NVARCHAR(255) = ''				/*Alternative string to find*/
+, @ExcludeString1 NVARCHAR(255) = ''			/*Exclude objects containg this*/
+, @ExcludeObjectNames NVARCHAR(MAX) = ''		/*Exclude these objects*/
+, @ExcludeNameContaining NVARCHAR(1024) = ''	/*Exclude objects where the name contains this*/
+, @HardCompareOnBothStrings BIT = 0				/*If using both searchstrings, 1 = both strings must exist*/
+, @NumOfCharsToView INT = 100					/*Number of chars to the right to view in result*/
+, @PreNumOfCharsToView INT = 10					/*Number of chars to the left to view in result*/
 
 IF @SearchString1 IS NULL SET @SearchString1 = CONVERT(VARCHAR(38), NEWID())
 
@@ -59,6 +51,7 @@ DECLARE
 	@SqlStmnt NVARCHAR(max)
 	, @Parameters NVARCHAR(255) = '@SearchString1 NVARCHAR(255)
 	, @SearchString2 NVARCHAR(255)
+	, @ExcludeString1 NVARCHAR(255)
 	, @ExcludeObjectNames NVARCHAR(max)
 	, @ExcludeNameContaining NVARCHAR(1024)'
 	, @dfn CHAR(2) =  CHAR(39) + CHAR(39)
@@ -66,7 +59,7 @@ DECLARE
 	
 	SET @DefinitionReplaceStatement = 'REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(m.definition, CHAR(10), ''''), CHAR(13), ''''), CHAR(9), ''''), CHAR(32), ''''), ''['', ''''), '']'', '''')'
 	SET @SearchString1 = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@SearchString1, CHAR(10), ''), CHAR(13), ''), CHAR(9), ''), CHAR(32), ''), '[', ''), ']', '')
-	SET @SearchString2 = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@SearchString1, CHAR(10), ''), CHAR(13), ''), CHAR(9), ''), CHAR(32), ''), '[', ''), ']', '')
+	SET @SearchString2 = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(@SearchString2, CHAR(10), ''), CHAR(13), ''), CHAR(9), ''), CHAR(32), ''), '[', ''), ']', '')
 
 DROP TABLE IF EXISTS #Res
 CREATE TABLE #Res
@@ -88,9 +81,8 @@ SELECT
 	, [create_date]
 	, [modify_date]
 	, [last_execution_time]
-	, IIF(HitPosOnSearchString1 > 0, FIRSTHIT_SearchString1, NULL) AS FirstHitCodePart1'
-	+ IIF(ISNULL(@SearchString2, '') != '', '
-	, IIF(HitPosOnSearchString2 > 0, FIRSTHIT_SearchString2, NULL)  AS FirstHitCodePart2', '') + '
+	, IIF(HitPosOnSearchString1 > 0, FIRSTHIT_SearchString1, NULL) AS FirstHitCodePart1
+	, IIF(HitPosOnSearchString2 > 0, FIRSTHIT_SearchString2, NULL)  AS FirstHitCodePart2
 FROM(
 	SELECT
 	o.type
@@ -101,19 +93,16 @@ FROM(
 	, COALESCE(ps.last_execution_time, fns.last_execution_time) AS last_execution_time
 	, SUBSTRING(
 			' + @DefinitionReplaceStatement + '
-			, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ')
-			, 100
+			, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ')' + IIF(ISNULL(@PreNumOfCharsToView, 0) > 0, ' - ' + CONVERT(VARCHAR, ISNULL(@PreNumOfCharsToView, 0)), '') + '
+			, ' + CONVERT(VARCHAR, ISNULL(@NumOfCharsToView, 100)) + '
 		) AS FIRSTHIT_SearchString1
-	, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ') AS HitPosOnSearchString1'
-
-IF(NULLIF(@SearchString2, '') IS NOT NULL)
-	SET @SqlStmnt = @SqlStmnt + '
-	, SUBSTRING(
+	, CHARINDEX(@SearchString1, ' + @DefinitionReplaceStatement + ') AS HitPosOnSearchString1
+	, IIF(@SearchString2 IS NULL OR @SearchString2 = '''', NULL, SUBSTRING(
 			' + @DefinitionReplaceStatement + '
-			, CHARINDEX(@SearchString2, ' + @DefinitionReplaceStatement + ')
-			, 100
-		) AS FIRSTHIT_SearchString2
-	, CHARINDEX(@SearchString2, ' + @DefinitionReplaceStatement + ') AS HitPosOnSearchString2'
+			, CHARINDEX(@SearchString2, ' + @DefinitionReplaceStatement + ')' + IIF(ISNULL(@PreNumOfCharsToView, 0) > 0, ' - ' + CONVERT(VARCHAR, ISNULL(@PreNumOfCharsToView, 0)), '') + '
+			, ' + CONVERT(VARCHAR, ISNULL(@NumOfCharsToView, 100)) + '
+		)) AS FIRSTHIT_SearchString2
+	, IIF(@SearchString2 IS NULL OR @SearchString2 = '''', NULL, CHARINDEX(@SearchString2, ' + @DefinitionReplaceStatement + ')) AS HitPosOnSearchString2'
 
 SET @SqlStmnt = @SqlStmnt + '
 FROM
@@ -134,6 +123,10 @@ IF(NULLIF(@SearchString2, '') IS NOT NULL)
 	SET @SqlStmnt = @SqlStmnt
 	+ CHAR(10) + '	' + IIF(@HardCompareOnBothStrings = 1, 'AND', 'OR') + ' ' + @DefinitionReplaceStatement + ' LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @SearchString2 + ' + CHAR(39) + '%'  + CHAR(39)
 
+IF(NULLIF(@ExcludeString1, '') IS NOT NULL)
+	SET @SqlStmnt = @SqlStmnt
+	+ CHAR(10) + '	' + IIF(@HardCompareOnBothStrings = 1, 'AND', 'OR') + ' ' + @DefinitionReplaceStatement + ' NOT LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @ExcludeString1 + ' + CHAR(39) + '%'  + CHAR(39)
+
 IF(ISNULL(@ExcludeObjectNames, '') != '')
 	SET @SqlStmnt = @SqlStmnt
 	+ CHAR(10) + '	AND NOT EXISTS(SELECT 1 FROM string_split(@ExcludeObjectNames, '','') WHERE [Value] = o.name)'
@@ -148,8 +141,8 @@ SET @SqlStmnt = @SqlStmnt
 ORDER BY
 	s.name'
 
-	print @SqlStmnt
-IF ISNULL(@SearchString2, '') != ''
+	PRINT @SqlStmnt
+
 	INSERT INTO #Res
 	(
 		[Type]
@@ -166,24 +159,7 @@ IF ISNULL(@SearchString2, '') != ''
 		, @Parameters
 		, @SearchString1
 		, @SearchString2
-		, @ExcludeObjectNames
-		, @ExcludeNameContaining
-ELSE
-	INSERT INTO #Res
-	(
-		[Type]
-		, [Name]
-		, [object_id]
-		, create_date
-		, modify_date
-		, last_execution_time
-		, FirstHitCodePart1
-	)
-	EXEC Sp_ExecuteSql
-		@SqlStmnt
-		, @Parameters
-		, @SearchString1
-		, @SearchString2
+		, @ExcludeString1
 		, @ExcludeObjectNames
 		, @ExcludeNameContaining
 

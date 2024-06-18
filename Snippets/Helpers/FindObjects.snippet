@@ -38,7 +38,7 @@
 DECLARE
 @SearchString1 NVARCHAR(255) = ''				/*String to find*/
 , @SearchString2 NVARCHAR(255) = ''				/*Alternative string to find*/
-, @ExcludeString1 NVARCHAR(255) = ''			/*Exclude objects containg this*/
+, @ExcludeString NVARCHAR(255) = ''			/*Exclude objects containing any of this*/
 , @ExcludeObjectNames NVARCHAR(MAX) = ''		/*Exclude these objects*/
 , @ExcludeNameContaining NVARCHAR(1024) = ''	/*Exclude objects where the name contains this*/
 , @HardCompareOnBothStrings BIT = 0				/*If using both searchstrings, 1 = both strings must exist*/
@@ -126,7 +126,9 @@ IF(NULLIF(@SearchString2, '') IS NOT NULL)
 
 IF(NULLIF(@ExcludeString1, '') IS NOT NULL)
 	SET @SqlStmnt = @SqlStmnt
-	+ CHAR(10) + '	AND' + ' ' + @DefinitionReplaceStatement + ' NOT LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @ExcludeString1 + ' + CHAR(39) + '%'  + CHAR(39)
+	+ CHAR(10) + (SELECT STRING_AGG('AND ' + ' ' + @DefinitionReplaceStatement + ' NOT LIKE ''%' + [Value] + '%''', CHAR(10))
+	FROM
+		string_split(@ExcludeString, ','))
 
 IF(ISNULL(@ExcludeObjectNames, '') != '')
 	SET @SqlStmnt = @SqlStmnt

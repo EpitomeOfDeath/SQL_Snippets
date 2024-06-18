@@ -35,7 +35,7 @@ Large scans are OK in small tables.
 
 */
 Declare
-@TableName sysname = 'Item' --Enter a specific tabel to investigate
+@TableName sysname = '' --Enter a specific tabel to investigate
 , @TableAlias Varchar(255) = NULL--Enter a table alias for the columns
 , @IndexName sysname = NULL --Enter a specific index to investigate
 , @IndexUsageDropThreshold Int = 100 --Enter a value (Sum of SEEK, SCAN, LOOCKUP) for when a DROP INDEX statement shuold be created

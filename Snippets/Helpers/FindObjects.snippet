@@ -44,6 +44,7 @@ DECLARE
 , @HardCompareOnBothStrings BIT = 0				/*If using both searchstrings, 1 = both strings must exist*/
 , @NumOfCharsToView INT = 100					/*Number of chars to the right to view in result*/
 , @PreNumOfCharsToView INT = 10					/*Number of chars to the left to view in result*/
+, @FindLastExecutionDateFromPlan BIT = 0		/*Get last execution time from Plan OBS timeconsuming*/
 
 IF @SearchString1 IS NULL SET @SearchString1 = CONVERT(VARCHAR(38), NEWID())
 
@@ -125,7 +126,7 @@ IF(NULLIF(@SearchString2, '') IS NOT NULL)
 
 IF(NULLIF(@ExcludeString1, '') IS NOT NULL)
 	SET @SqlStmnt = @SqlStmnt
-	+ CHAR(10) + '	' + IIF(@HardCompareOnBothStrings = 1, 'AND', 'OR') + ' ' + @DefinitionReplaceStatement + ' NOT LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @ExcludeString1 + ' + CHAR(39) + '%'  + CHAR(39)
+	+ CHAR(10) + '	AND' + ' ' + @DefinitionReplaceStatement + ' NOT LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @ExcludeString1 + ' + CHAR(39) + '%'  + CHAR(39)
 
 IF(ISNULL(@ExcludeObjectNames, '') != '')
 	SET @SqlStmnt = @SqlStmnt
@@ -163,7 +164,27 @@ ORDER BY
 		, @ExcludeObjectNames
 		, @ExcludeNameContaining
 
-SELECT * from #Res
+	IF(ISNULL(@FindLastExecutionDateFromPlan, 0) = 1)
+		UPDATE #Res
+		SET
+			last_execution_time =
+			(
+				SELECT   
+					MAX(s.last_execution_time) As last_execution_time
+				FROM 
+					sys.dm_exec_query_stats s  
+				CROSS APPLY
+					sys.dm_exec_sql_text( s.sql_handle ) t  
+				WHERE
+					CHARINDEX(#Res.[Name], t.text) > 0
+			)
+		WHERE
+			last_execution_time IS NULL
+
+SELECT
+	*
+FROM
+	#Res
 ]]>
 			</Code>
 		</Snippet>

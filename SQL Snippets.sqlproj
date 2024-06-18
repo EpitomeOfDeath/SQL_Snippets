@@ -126,5 +126,6 @@
     <None Include="Snippets\Objects\Add Unique Constraint.snippet" />
     <None Include="Snippets\Optimize\FindIndexUsage.snippet" />
     <None Include="Snippets\Optimize\Clear plans.snippet" />
+    <None Include="Snippets\Other\MINMAX_BIGINT.snippet" />
   </ItemGroup>
 </Project>

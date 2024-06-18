@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="https://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<_locDefinition xmlns="urn:locstudio">
+		<_locDefault _loc="locNone" />
+		<_locTag _loc="locData">Title</_locTag>
+		<_locTag _loc="locData">Description</_locTag>
+		<_locTag _loc="locData">Author</_locTag>
+		<_locTag _loc="locData">ToolTip</_locTag>
+		<_locTag _loc="locData">Default</_locTag>
+	</_locDefinition>
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>MINMAX_BIGINT</Title>
+			<Shortcut>MMBI</Shortcut>
+			<Description>Min And MAx Bigint Values</Description>
+			<Author>Micael Uthas (uthas.com)</Author>
+			<SnippetTypes>
+				<SnippetType>SurroundsWith</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal>
+					<ID>SomeLit</ID>
+					<ToolTip>Add a litteral to replace stuff in code</ToolTip>
+					<Default>avalue</Default>
+				</Literal>
+			</Declarations>
+			<Code Language="SQL">
+				<![CDATA[
+Select -9223372036854775808 AS MINBIGINT, 9223372036854775807 AS MAXBIGINT
+]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

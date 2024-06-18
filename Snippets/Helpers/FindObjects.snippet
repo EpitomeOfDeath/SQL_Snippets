@@ -52,7 +52,7 @@ DECLARE
 	@SqlStmnt NVARCHAR(max)
 	, @Parameters NVARCHAR(255) = '@SearchString1 NVARCHAR(255)
 	, @SearchString2 NVARCHAR(255)
-	, @ExcludeString1 NVARCHAR(255)
+	, @ExcludeString NVARCHAR(255)
 	, @ExcludeObjectNames NVARCHAR(max)
 	, @ExcludeNameContaining NVARCHAR(1024)'
 	, @dfn CHAR(2) =  CHAR(39) + CHAR(39)
@@ -124,7 +124,7 @@ IF(NULLIF(@SearchString2, '') IS NOT NULL)
 	SET @SqlStmnt = @SqlStmnt
 	+ CHAR(10) + '	' + IIF(@HardCompareOnBothStrings = 1, 'AND', 'OR') + ' ' + @DefinitionReplaceStatement + ' LIKE ' + CHAR(39) +  '%' + CHAR(39) + ' + @SearchString2 + ' + CHAR(39) + '%'  + CHAR(39)
 
-IF(NULLIF(@ExcludeString1, '') IS NOT NULL)
+IF(NULLIF(@ExcludeString, '') IS NOT NULL)
 	SET @SqlStmnt = @SqlStmnt
 	+ CHAR(10) + (SELECT STRING_AGG('AND ' + ' ' + @DefinitionReplaceStatement + ' NOT LIKE ''%' + [Value] + '%''', CHAR(10))
 	FROM
@@ -162,7 +162,7 @@ ORDER BY
 		, @Parameters
 		, @SearchString1
 		, @SearchString2
-		, @ExcludeString1
+		, @ExcludeString
 		, @ExcludeObjectNames
 		, @ExcludeNameContaining
 

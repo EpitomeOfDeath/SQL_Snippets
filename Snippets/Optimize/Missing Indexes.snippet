@@ -10,7 +10,7 @@
 	</_locDefinition>
 	<CodeSnippet Format="1.0.0">
 		<Header>
-			<Title>Indexe Missing</Title>
+			<Title>Missing Indexes</Title>
 			<Shortcut>ixmsn</Shortcut>
 			<Description>Find missing indexes</Description>
 			<Author>Micael Uthas (uthas.com)</Author>
@@ -23,46 +23,55 @@
 				<![CDATA[
 DECLARE
 	@TableName SYSNAME = ''/*Enter a table name to find missing top n indexes for a specific table. if left empty, top n missing indexes for all tables will be returned.*/
-
-SELECT TOP 25
-	dm_mid.database_id AS DatabaseID,
-	dm_migs.avg_user_impact*(dm_migs.user_seeks+dm_migs.user_scans) Avg_Estimated_Impact,
-	dm_migs.last_user_seek AS Last_User_Seek,
-	OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) AS [TableName],
-	'CREATE INDEX [IX_' + OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) + '_'
-	+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.equality_columns,''),', ','_'),'[',''),']','') 
-	+ CASE
-		WHEN dm_mid.equality_columns IS NOT NULL 
-		AND dm_mid.inequality_columns IS NOT NULL
-		THEN 
-			'_'
-		ELSE
-			''
-		END
-	+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.inequality_columns,''),', ','_'),'[',''),']','')
-	+ ']'
-	+ ' ON ' + dm_mid.statement
-	+ ' (' + ISNULL (dm_mid.equality_columns,'')
-	+ CASE
-		WHEN dm_mid.equality_columns IS NOT NULL AND dm_mid.inequality_columns IS NOT NULL THEN
-			','
-		ELSE
-			''
-		END
-	+ ISNULL (dm_mid.inequality_columns, '')
-	+ ')'
-	+ ISNULL (' INCLUDE (' + dm_mid.included_columns + ')', '') AS Create_Statement
+SELECT
+	DatabaseID
+	, Avg_Estimated_Impact
+	, Last_User_Seek
+	, [TableName]
+	, IndexName
+	, KeyCols
+	, IncludeCols
+	, 'CREATE NONCLUSTERED INDEX ' + QUOTENAME(IndexName) + ' ON ' + QUOTENAME([TableName]) + '(' + KeyCols + ')' + ISNULL(' INCLUDE(' + IncludeCols + ')', '')
+	, 'DROP INDEX ' + QUOTENAME([TableName]) + '.' + QUOTENAME(IndexName)
 FROM
-	sys.dm_db_missing_index_groups dm_mig
-INNER JOIN
-	sys.dm_db_missing_index_group_stats dm_migs
-		ON dm_migs.group_handle = dm_mig.index_group_handle
-INNER JOIN
-	sys.dm_db_missing_index_details dm_mid
-		ON dm_mig.index_handle = dm_mid.index_handle
-WHERE
-	dm_mid.database_ID = DB_ID()
-	AND (NULLIF(@TableName, '') IS NULL OR OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) = @TableName)
+(
+	SELECT 
+		dm_mid.database_id AS DatabaseID,
+		dm_migs.avg_user_impact*(dm_migs.user_seeks+dm_migs.user_scans) Avg_Estimated_Impact,
+		dm_migs.last_user_seek AS Last_User_Seek,
+		OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) AS [TableName],
+		'IX_' + OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) + '_'
+		+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.equality_columns,''),', ','_'),'[',''),']','') 
+		+ CASE
+			WHEN dm_mid.equality_columns IS NOT NULL 
+			AND dm_mid.inequality_columns IS NOT NULL
+			THEN 
+				'_'
+			ELSE
+				''
+			END
+		+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.inequality_columns,''),', ','_'),'[',''),']','') AS IndexName
+		, ISNULL (dm_mid.equality_columns,'')
+		+ CASE
+			WHEN dm_mid.equality_columns IS NOT NULL AND dm_mid.inequality_columns IS NOT NULL THEN
+				','
+			ELSE
+				''
+			END
+		+ ISNULL (dm_mid.inequality_columns, '') AS KeyCols
+		, dm_mid.included_columns AS IncludeCols
+	FROM
+		sys.dm_db_missing_index_groups dm_mig
+	INNER JOIN
+		sys.dm_db_missing_index_group_stats dm_migs
+			ON dm_migs.group_handle = dm_mig.index_group_handle
+	INNER JOIN
+		sys.dm_db_missing_index_details dm_mid
+			ON dm_mig.index_handle = dm_mid.index_handle
+	WHERE
+		dm_mid.database_ID = DB_ID()
+		AND (NULLIF(@TableName, '') IS NULL OR OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) = @TableName)
+	) ix
 ORDER BY
 	Avg_Estimated_Impact DESC
 GO]]>

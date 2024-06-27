@@ -31,8 +31,9 @@ SELECT
 	, IndexName
 	, KeyCols
 	, IncludeCols
-	, 'CREATE NONCLUSTERED INDEX ' + QUOTENAME(IndexName) + ' ON ' + QUOTENAME([TableName]) + '(' + KeyCols + ')' + ISNULL(' INCLUDE(' + IncludeCols + ')', '')
-	, 'DROP INDEX ' + QUOTENAME([TableName]) + '.' + QUOTENAME(IndexName)
+	, 'CREATE NONCLUSTERED INDEX ' + QUOTENAME('IX_' + IndexName + CONVERT(VARCHAR, index_handle)) + ' ON ' + QUOTENAME([TableName]) + '(' + KeyCols + ')' + ISNULL(' INCLUDE(' + IncludeCols + ')', '')
+	, 'DROP INDEX ' + QUOTENAME([TableName]) + '.' + QUOTENAME('IX_' + IndexName + CONVERT(VARCHAR, index_handle))
+	, index_handle
 FROM
 (
 	SELECT 
@@ -40,7 +41,7 @@ FROM
 		dm_migs.avg_user_impact*(dm_migs.user_seeks+dm_migs.user_scans) Avg_Estimated_Impact,
 		dm_migs.last_user_seek AS Last_User_Seek,
 		OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) AS [TableName],
-		'IX_' + OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) + '_'
+		OBJECT_NAME(dm_mid.OBJECT_ID,dm_mid.database_id) + '_'
 		+ REPLACE(REPLACE(REPLACE(ISNULL(dm_mid.equality_columns,''),', ','_'),'[',''),']','') 
 		+ CASE
 			WHEN dm_mid.equality_columns IS NOT NULL 
@@ -60,6 +61,7 @@ FROM
 			END
 		+ ISNULL (dm_mid.inequality_columns, '') AS KeyCols
 		, dm_mid.included_columns AS IncludeCols
+		, dm_mid.index_handle
 	FROM
 		sys.dm_db_missing_index_groups dm_mig
 	INNER JOIN

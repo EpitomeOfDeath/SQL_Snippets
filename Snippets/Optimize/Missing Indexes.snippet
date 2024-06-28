@@ -31,7 +31,7 @@ SELECT
 	, IndexName
 	, KeyCols
 	, IncludeCols
-	, 'CREATE NONCLUSTERED INDEX ' + QUOTENAME('IX_' + IndexName + CONVERT(VARCHAR, index_handle)) + ' ON ' + QUOTENAME([TableName]) + '(' + KeyCols + ')' + ISNULL(' INCLUDE(' + IncludeCols + ')', '')
+	, 'CREATE NONCLUSTERED INDEX ' + QUOTENAME('IX_' + IndexName + CONVERT(VARCHAR, index_handle)) + ' ON ' + QUOTENAME([TableName]) + '(' + KeyCols + ')'
 	, 'DROP INDEX ' + QUOTENAME([TableName]) + '.' + QUOTENAME('IX_' + IndexName + CONVERT(VARCHAR, index_handle))
 	, index_handle
 FROM
